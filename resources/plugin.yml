@@ -1,0 +1,14 @@
+name: Bingo
+main: org.greenem.plugins.bingo.main.Main
+version: 1.0.0
+api-version: 1.16
+commands:
+   bgstart:
+      description: Start the game
+      default: true
+   bglist:
+      description: Print the list of the blocks again
+      default: true
+   bglock:
+      description: Lock the resetting of the game for current session
+      default: true

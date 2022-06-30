@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.greenem.plugins.bingo.config.ConfigData;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.files.SavingData;
+import org.greenem.plugins.bingo.map.GridOperations;
 import org.greenem.plugins.bingo.util.StandartUtils;
 
 public class GameOperations {
@@ -42,6 +43,7 @@ public class GameOperations {
 			References.amountOfLinearitems = amount;
 			References.materialList = BingoOperations.generateArray(amount);
 			SavingData.saveTask(true);
+			GridOperations.generateImage(amount);
 			SavingData.resetProgress();
 			printList(sender, 1);
 			for (Player p : Bukkit.getOnlinePlayers()) {

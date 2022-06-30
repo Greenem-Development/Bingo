@@ -5,15 +5,31 @@ import static org.greenem.plugins.bingo.util.SimpleLogger.log;
 import static org.greenem.plugins.bingo.util.Stash.isSenderAPlayer;
 import static org.greenem.plugins.bingo.util.Stash.isSenderAPlayerOrConsole;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Double;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.map.MapView;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.FileUtil;
 import org.greenem.plugins.bingo.config.ConfigOperations;
 import org.greenem.plugins.bingo.data.ProjectInfo;
 import org.greenem.plugins.bingo.data.References;
@@ -21,6 +37,8 @@ import org.greenem.plugins.bingo.events.BingoEvents;
 import org.greenem.plugins.bingo.files.LoadingData;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
 import org.greenem.plugins.bingo.functionality.GameOperations;
+import org.greenem.plugins.bingo.map.GridOperations;
+import org.greenem.plugins.bingo.map.TaskRenderer;
 import org.greenem.plugins.bingo.util.DebugModeSwitch;
 import org.greenem.plugins.bingo.util.OsDependent;
 import org.greenem.plugins.bingo.util.SimpleLogger;
@@ -40,8 +58,6 @@ public class Main extends JavaPlugin implements Listener {
 		initAll();
 		ConfigOperations.updateAndLoadConfig();
 		finishInit();
-		
-		tests();
 	}
 	
 	@Override
@@ -69,6 +85,11 @@ public class Main extends JavaPlugin implements Listener {
 		else if(cmd.getName().equalsIgnoreCase("bglock")){
 			if(isSenderAPlayerOrConsole(sender)) {
 				GameOperations.lockGame(sender);
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("bgtest1")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				GridOperations.scanTexturesNames();
 			}
 		}
 		return true;
@@ -112,7 +133,21 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	private void tests() {
-		
+	private void test1(CommandSender sender) {
+		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
+		view.getRenderers().clear();
+		TaskRenderer renderer = new TaskRenderer();
+		File f = new File("G:\\for everything\\5\\хрень\\test.png");
+		if(renderer.init(f)) {
+			view.addRenderer(renderer);
+			ItemStack is = new ItemStack(Material.FILLED_MAP);
+			MapMeta meta = (MapMeta) is.getItemMeta();
+			meta.setMapView(view);
+			is.setItemMeta(meta);
+			((Player) sender).getInventory().addItem(is);
+		} else {
+			debug(ChatColor.RED + "Rendering map view error, can't find the file");
+			return;
+		}
 	}
 }

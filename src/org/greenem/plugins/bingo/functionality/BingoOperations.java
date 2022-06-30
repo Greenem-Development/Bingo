@@ -3,16 +3,27 @@ package org.greenem.plugins.bingo.functionality;
 import static org.greenem.plugins.bingo.util.SimpleLogger.debug;
 import static org.greenem.plugins.bingo.util.SimpleLogger.log;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Double;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.util.FileUtil;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.files.SavingData;
 
@@ -57,6 +68,7 @@ public class BingoOperations {
 	public static void initForbidden() {
 		forbidden.add(Material.END_PORTAL);
 		forbidden.add(Material.END_PORTAL_FRAME);
+		forbidden.add(Material.END_GATEWAY);
 		forbidden.add(Material.NETHER_PORTAL); // WHAT ABOUT TOUCHING IT
 		forbidden.add(Material.WATER);
 		forbidden.add(Material.LAVA);
@@ -70,11 +82,26 @@ public class BingoOperations {
 		forbidden.add(Material.PUMPKIN_STEM);
 		forbidden.add(Material.MELON_STEM);
 		forbidden.add(Material.BEDROCK);
+		forbidden.add(Material.BARRIER);
 		forbidden.add(Material.SNOW);
 		forbidden.add(Material.AMETHYST_CLUSTER);
+		forbidden.add(Material.BUDDING_AMETHYST);
+		forbidden.add(Material.LARGE_AMETHYST_BUD);
+		forbidden.add(Material.SMALL_AMETHYST_BUD);
+		forbidden.add(Material.MEDIUM_AMETHYST_BUD);
 		forbidden.add(Material.CHORUS_PLANT); // think again
 		forbidden.add(Material.LIGHT);
+		forbidden.add(Material.STRUCTURE_BLOCK);
+		forbidden.add(Material.STRUCTURE_VOID);
+//		forbidden.add(Material.LEGACY_BED_BLOCK); //?????
+		forbidden.add(Material.PLAYER_WALL_HEAD); // TODO And a bunch of other wall stuff, including corals
 		// that portal block from deep dark 1.19 (reinforced deepslate)
+		forbidden.add(Material.TRIPWIRE); // what is similar?
+		forbidden.add(Material.WEEPING_VINES); // others?
+		// nether vines?
+		forbidden.add(Material.PETRIFIED_OAK_SLAB); // ?
+		forbidden.add(Material.PLAYER_HEAD);
+		forbidden.add(Material.PLAYER_WALL_HEAD);
 	}
 	
 	public static void checkNewItem(Player p, Material m) {

@@ -12,3 +12,6 @@ commands:
    bglock:
       description: Lock the resetting of the game for current session
       default: true
+   bgtest1:
+      description: Test
+      default: true

@@ -21,6 +21,8 @@ import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
 
 public class GridOperations {
+	private static int betweenItems = 5;
+	
 	public static String sortWords(String s) {
 		String[] arr = s.split("_");
 		Arrays.sort(arr);
@@ -109,19 +111,22 @@ public class GridOperations {
 		}
 	}
 	
-	public static void generateImage(int items) {
-		// and load back to References
+	public static void generateImage(int items) { // TODO maybe custom modes of the map? Like open in front of everything + esc
+		// and load back to References TODO
 		int[] grid = generateLayout(items);
 		int width = grid[0];
 		int height = getGridHeight(grid);
 		int atTheSide = 10;
-		BufferedImage target = new BufferedImage(2 * atTheSide + getSideSize(width), 2 * atTheSide + getSideSize(height), BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		BufferedImage target = new BufferedImage(2 * atTheSide + getSideSize(width) - betweenItems, 2 * atTheSide + getSideSize(height) - betweenItems, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+		g.setColor(Color.RED);
+		g.fillRect(0, 0, atTheSide, atTheSide);
+		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
 		int counter = 0;
 		for(int i = 0; i < grid.length; i++) {
-			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i]))) / 2;
+			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i])  - betweenItems)) / 2;
 			for(int j = 0; j < grid[i]; j++) {
 				BufferedImage texture = null;
 				try {
@@ -129,7 +134,6 @@ public class GridOperations {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
 				
 				try {
 					texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way1Output\\" + References.materialList.get(counter).name() + ".png"));
@@ -139,11 +143,11 @@ public class GridOperations {
 						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way1OutputTest\\" + References.materialList.get(counter).name() + ".png"));
 					} catch (IOException e1) {
 //						e1.printStackTrace();
-						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
+//						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
 					}
 				}
-				
-				g.drawImage(texture, atTheSide + offset + getSideSize(j), atTheSide + offset + getSideSize(i), null);
+//				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
+				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), null);
 				counter++;
 			}
 		}
@@ -156,8 +160,9 @@ public class GridOperations {
 	}
 	
 	private static int getSideSize(int amount) {
-		int between = 5;
-		return 16*amount + between*(amount-1);
+		int result = 16 * amount;
+		if(amount>0) result += betweenItems * (amount);
+		return result;
 	}
 	
 	private static int getGridHeight(int[] grid) {

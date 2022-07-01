@@ -11,6 +11,7 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import org.bukkit.map.MapView.Scale;
 
 public class TaskRenderer extends MapRenderer {
 	private BufferedImage img;
@@ -36,6 +37,7 @@ public class TaskRenderer extends MapRenderer {
 		if(done) return;
 		
 		view.setTrackingPosition(false);
+//		view.setScale(Scale.FARTHEST);
 		canvas.drawImage(0, 0, img);
 		done = true;
 	}

@@ -87,9 +87,14 @@ public class Main extends JavaPlugin implements Listener {
 				GameOperations.lockGame(sender);
 			}
 		}
-		else if(cmd.getName().equalsIgnoreCase("bgtest1")){
+		else if(cmd.getName().equalsIgnoreCase("bgtestscan")){
 			if(isSenderAPlayerOrConsole(sender)) {
 				GridOperations.scanTexturesNames();
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("bgtestmap")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				test1(sender);
 			}
 		}
 		return true;
@@ -134,10 +139,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	private void test1(CommandSender sender) {
+		GridOperations.generateImage(References.amountOfLinearitems);
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
 		view.getRenderers().clear();
 		TaskRenderer renderer = new TaskRenderer();
-		File f = new File("G:\\for everything\\5\\хрень\\test.png");
+		File f = new File("G:\\for everything\\5\\хрень\\generated.png");
 		if(renderer.init(f)) {
 			view.addRenderer(renderer);
 			ItemStack is = new ItemStack(Material.FILLED_MAP);

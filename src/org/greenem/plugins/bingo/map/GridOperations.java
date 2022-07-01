@@ -22,6 +22,7 @@ import org.greenem.plugins.bingo.functionality.BingoOperations;
 
 public class GridOperations {
 	private static int betweenItems = 5;
+	private static int imageResolution = 25; // 16 - default, 25 - max for 5*5, also can try 32
 	
 	public static String sortWords(String s) {
 		String[] arr = s.split("_");
@@ -34,9 +35,9 @@ public class GridOperations {
 	}
 	
 	public static void scanTexturesNames() {
-		File dir = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\allNeeded");
-		File output = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\output");
-		File testOutput = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\outputTest");
+		File dir = new File("G:\\for everything\\5\\хрень\\3dTextures");
+		File output = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output");
+		File testOutput = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest");
 		output.mkdirs();
 		testOutput.mkdirs();
 		File[] files = dir.listFiles(new FilenameFilter() {
@@ -78,7 +79,7 @@ public class GridOperations {
 		boolean gray = image.getName().contains("leaves") && !image.getName().contains("azalea");
 		try { original = ImageIO.read(image); } catch (IOException e) { e.printStackTrace(); }
 		
-		if((original.getWidth()==16 && original.getHeight()!=16) || gray) {
+		if((original.getWidth()==16 && original.getHeight()!=16)) { // || gray
 			BufferedImage target = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = (Graphics2D) target.getGraphics();
 			g.drawImage(original, 0, 0, null);
@@ -117,13 +118,18 @@ public class GridOperations {
 		int width = grid[0];
 		int height = getGridHeight(grid);
 		int atTheSide = 10;
-		BufferedImage target = new BufferedImage(2 * atTheSide + getSideSize(width) - betweenItems, 2 * atTheSide + getSideSize(height) - betweenItems, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		int x = 2 * atTheSide + getSideSize(width) - betweenItems;
+		int y = 2 * atTheSide + getSideSize(height) - betweenItems;
+		int max = x;
+		if(y>x) max = y;
+		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+//		debug(x + " " + y + " " + max);
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
-		g.setColor(Color.RED);
-		g.fillRect(0, 0, atTheSide, atTheSide);
-		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+//		g.setColor(Color.RED);
+//		g.fillRect(0, 0, atTheSide, atTheSide);
+//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
 		int counter = 0;
 		for(int i = 0; i < grid.length; i++) {
 			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i])  - betweenItems)) / 2;
@@ -136,22 +142,22 @@ public class GridOperations {
 				}
 				
 				try {
-					texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way1Output\\" + References.materialList.get(counter).name() + ".png"));
+					texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\" + References.materialList.get(counter).name() + ".png"));
 				} catch (IOException e) {
 //					e.printStackTrace();
 					try {
-						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way1OutputTest\\" + References.materialList.get(counter).name() + ".png"));
+						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest\\" + References.materialList.get(counter).name() + ".png"));
 					} catch (IOException e1) {
 //						e1.printStackTrace();
 //						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
 					}
 				}
 //				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
-				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), null);
+				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), imageResolution, imageResolution, null);
 				counter++;
 			}
 		}
-		File outputfile = new File("G:\\for everything\\5\\хрень\\genarated.png");
+		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
 		try {
 			ImageIO.write(target, "png", outputfile);
 		} catch (IOException e) {
@@ -160,7 +166,7 @@ public class GridOperations {
 	}
 	
 	private static int getSideSize(int amount) {
-		int result = 16 * amount;
+		int result = imageResolution * amount;
 		if(amount>0) result += betweenItems * (amount);
 		return result;
 	}

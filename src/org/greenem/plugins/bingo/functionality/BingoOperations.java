@@ -59,7 +59,9 @@ public class BingoOperations {
 			// can players use that item?
 			// do they need to keep all of them to the end? (config, default: false)
 			String lowercase = m.name().toLowerCase();
-		    if (forbidden.contains(m) || lowercase.contains("legacy") || lowercase.contains("command") || lowercase.contains("spawn_egg") || lowercase.contains("infested")) { 
+		    if (forbidden.contains(m) || lowercase.contains("legacy") || lowercase.contains("command") || lowercase.contains("spawn_egg") || lowercase.contains("infested")
+		    		 || lowercase.contains("wall_sign") || lowercase.contains("wall_banner") || lowercase.contains("wall_fan") || lowercase.contains("candle_cake")
+		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted")) { // check for misspelling TODO
 		        it.remove();
 		    }
 		}
@@ -75,6 +77,7 @@ public class BingoOperations {
 		forbidden.add(Material.FROSTED_ICE);
 		forbidden.add(Material.SPAWNER);
 		forbidden.add(Material.FIRE);
+		forbidden.add(Material.SOUL_FIRE);
 		forbidden.add(Material.AIR);
 		forbidden.add(Material.PISTON_HEAD);
 		forbidden.add(Material.MOVING_PISTON);
@@ -101,7 +104,27 @@ public class BingoOperations {
 		// nether vines?
 		forbidden.add(Material.PETRIFIED_OAK_SLAB); // ?
 		forbidden.add(Material.PLAYER_HEAD);
-		forbidden.add(Material.PLAYER_WALL_HEAD);
+		forbidden.add(Material.BUBBLE_COLUMN);
+		forbidden.add(Material.ATTACHED_MELON_STEM);
+		forbidden.add(Material.ATTACHED_PUMPKIN_STEM);
+		forbidden.add(Material.CAVE_AIR);
+		forbidden.add(Material.CAVE_VINES_PLANT);
+		forbidden.add(Material.KELP_PLANT);
+		forbidden.add(Material.LAVA_CAULDRON);
+		forbidden.add(Material.WATER_CAULDRON);
+		forbidden.add(Material.POWDER_SNOW_CAULDRON);
+		forbidden.add(Material.REDSTONE_WALL_TORCH);
+		forbidden.add(Material.SOUL_WALL_TORCH);
+		forbidden.add(Material.WALL_TORCH); //wall skull todo
+		forbidden.add(Material.TWISTING_VINES_PLANT);
+		forbidden.add(Material.WEEPING_VINES_PLANT); // chorus plant?
+		forbidden.add(Material.BUNDLE);
+		forbidden.add(Material.WRITTEN_BOOK); // ???
+		forbidden.add(Material.KNOWLEDGE_BOOK);
+//		forbidden.add(Material.BLACK_CANDLE_CAKE); // maybe allow some technical blocks and download textures? (3d, also only when "stand on blocks" is enabled)
+		
+		forbidden.add(Material.TIPPED_ARROW); // Functionality later
+		forbidden.add(Material.ENCHANTED_BOOK); // Functionality later
 	}
 	
 	public static void checkNewItem(Player p, Material m) {

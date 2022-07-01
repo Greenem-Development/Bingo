@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
@@ -24,6 +27,8 @@ public class GridOperations {
 	private static int betweenItems = 5;
 	private static int imageResolution = 25; // 16 - default, 25 - max for 5*5, also can try 32
 	
+	public static Map<Material, String> nameComparison;
+	
 	public static String sortWords(String s) {
 		String[] arr = s.split("_");
 		Arrays.sort(arr);
@@ -35,6 +40,7 @@ public class GridOperations {
 	}
 	
 	public static void scanTexturesNames() {
+		nameComparison = new HashMap<>();
 		File dir = new File("G:\\for everything\\5\\хрень\\3dTextures");
 		File output = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output");
 		File testOutput = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest");
@@ -46,32 +52,56 @@ public class GridOperations {
 				return name.endsWith(".png");
 			}
 		});
-		String lastSubstr = "testtesttest";
-		for(int i = 0; i < files.length; i++) {
-			File texture = files[i];
-			String tName = sortWords(texture.getName().substring(0,texture.getName().length()-4));
-			if(tName.startsWith(lastSubstr)) {
-				continue;
-			}
-			for(Material m : BingoOperations.allowed) {
-				String name = sortWords(m.name().toLowerCase());
-				if(tName.equals(name)) {
-					lastSubstr = name;
-					saveAndCrop(texture, output, m.name().toLowerCase());
-//					FileUtil.copy(texture, new File(output, name + ".png"));
-//					debug("1: " + name);
+//		String lastSubstr = "testtesttest";
+		int cNotFound = 0;
+		for(Material m : BingoOperations.allowed) {
+			String mNameOriginal = m.name().toLowerCase();
+			String mNameSotred = sortWords(mNameOriginal);
+			boolean found = false;
+			for(int i = 0; i < files.length; i++) {
+				File texture = files[i];
+				String tNameOriginal = texture.getName().substring(0,texture.getName().length()-4);
+				String tNameSorted = sortWords(tNameOriginal);
+				if(mNameSotred.equals(tNameSorted)) {
+					nameComparison.put(m, tNameSorted);
+					found = true;
 					break;
-				} else if(tName.contains(name)) {
-					lastSubstr = name;
-//					FileUtil.copy(texture, new File(testOutput, name + ".png"));
-					saveAndCrop(texture, testOutput, m.name().toLowerCase());
-//					debug("2:   " + tName + " |->| " + name);
-					break;
-				} else {
-					//System.out.println("3!!!!: " + tName + " " + name);
 				}
 			}
+			if(!found) {
+				debug(ChatColor.RED + "Didn't find: " + mNameOriginal);
+				cNotFound++;
+			}
 		}
+		for(Entry<Material, String> entry : nameComparison.entrySet()) {
+			debug(ChatColor.GREEN + "" + entry.getKey().name().toLowerCase() + "  -  " + entry.getValue());
+		}
+		debug(cNotFound + " " + nameComparison.size());
+//		for(int i = 0; i < files.length; i++) {
+//			File texture = files[i];
+//			String tName = sortWords(texture.getName().substring(0,texture.getName().length()-4));
+//			if(tName.startsWith(lastSubstr)) {
+//				continue;
+//			}
+//			for(Material m : BingoOperations.allowed) {
+//				String name = sortWords(m.name().toLowerCase());
+//				if(tName.equals(name)) {
+//					lastSubstr = name;
+//					saveAndCrop(texture, output, m.name().toLowerCase());
+////					FileUtil.copy(texture, new File(output, name + ".png"));
+////					debug("1: " + name);
+//					break;
+//				} else if(tName.contains(name)) {
+//					lastSubstr = name;
+////					FileUtil.copy(texture, new File(testOutput, name + ".png"));
+//					saveAndCrop(texture, testOutput, m.name().toLowerCase());
+////					debug("2:   " + tName + " |->| " + name);
+//					break;
+//				} else {
+//					//System.out.println("3!!!!: " + tName + " " + name);
+//				}
+//			}
+//		}
 	}
 	
 	private static void saveAndCrop(File image, File destination, String name) {
@@ -156,6 +186,11 @@ public class GridOperations {
 				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), imageResolution, imageResolution, null);
 				counter++;
 			}
+		}
+		try {
+			g.drawImage(ImageIO.read(new File("G:\\for everything\\картинки\\Compass_JE3_BE3.webp")), 0, 0, null);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
 		try {

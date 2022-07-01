@@ -150,7 +150,7 @@ public class Main extends JavaPlugin implements Listener {
 			MapMeta meta = (MapMeta) is.getItemMeta();
 			meta.setMapView(view);
 			is.setItemMeta(meta);
-			((Player) sender).getInventory().addItem(is);
+			if(sender instanceof Player) ((Player) sender).getInventory().addItem(is);
 		} else {
 			debug(ChatColor.RED + "Rendering map view error, can't find the file");
 			return;

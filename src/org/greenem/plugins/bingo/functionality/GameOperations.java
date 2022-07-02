@@ -40,7 +40,7 @@ public class GameOperations {
 				sender.sendMessage(ChatColor.RED + "The maximum amount of allowed (and different) items you can generate is " + BingoOperations.allowed.size() + "!");
 				return;
 			}
-			References.amountOfLinearitems = amount;
+			References.amountOfitems = amount;
 			References.materialList = BingoOperations.generateArray(amount);
 			SavingData.saveTask(true);
 			GridOperations.generateImage(amount);

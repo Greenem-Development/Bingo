@@ -14,5 +14,5 @@ public class References {
 	public static ArrayList<Material> materialList;
 	public static Map<String, ArrayList<Material>> playersProgress = new HashMap<>();
 	public static boolean inGame = false;
-	public static int amountOfLinearitems;
+	public static int amountOfitems;
 }

@@ -20,6 +20,7 @@ import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.util.GameModeType;
 
 public class LoadingData {
+	@SuppressWarnings("unchecked")
 	public static void loadTask() {
 		if(!ConfigData.saveGameProgress) return;
 		File f = new File(ProjectInfo.pluginFilesDirectory, "task.yml");
@@ -51,6 +52,7 @@ public class LoadingData {
 				References.mode = GameModeType.valueOf(y.getString("mode"));
 			}
 		}
+		References.amountOfitems = References.materialList.size();
 	}
 	
 	@SuppressWarnings("unchecked")

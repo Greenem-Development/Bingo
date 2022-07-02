@@ -22,6 +22,7 @@ import org.bukkit.Material;
 import org.bukkit.util.FileUtil;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
+import org.greenem.plugins.bingo.util.StandartUtils;
 
 public class GridOperations {
 	private static int betweenItems = 5;
@@ -205,12 +206,12 @@ public class GridOperations {
 		}
 	}
 	
-	public static void generateTESTImage() { // TODO maybe custom modes of the map? Like open in front of everything + esc
-		int max = 128;
+	public static void generateTESTImage(String[] args) { // TODO maybe custom modes of the map? Like open in front of everything + esc
+		if(args.length==0) return;
+		if(!StandartUtils.isInteger(args[0])) return;
+		int fillResolution = Integer.parseInt(args[0]); // 99;
 		int block = 16;
-		BufferedImage preTarget = new BufferedImage(block, block, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
-		Graphics2D preG = (Graphics2D) preTarget.getGraphics();
-		Material m = Material.DIRT;
+		Material m = Material.DROPPER;
 		BufferedImage texture = null;
 		String theName = m.name().toLowerCase();
 		try {
@@ -218,8 +219,7 @@ public class GridOperations {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		preG.drawImage(texture, 0, 0, block, block, null);
-		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		BufferedImage target = new BufferedImage(fillResolution, fillResolution, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO

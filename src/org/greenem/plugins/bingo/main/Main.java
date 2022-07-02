@@ -29,6 +29,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.FileUtil;
 import org.greenem.plugins.bingo.config.ConfigOperations;
 import org.greenem.plugins.bingo.data.ProjectInfo;
@@ -38,6 +39,7 @@ import org.greenem.plugins.bingo.files.LoadingData;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
 import org.greenem.plugins.bingo.functionality.GameOperations;
 import org.greenem.plugins.bingo.map.GridOperations;
+import org.greenem.plugins.bingo.map.NameDifferences;
 import org.greenem.plugins.bingo.map.TaskRenderer;
 import org.greenem.plugins.bingo.util.DebugModeSwitch;
 import org.greenem.plugins.bingo.util.OsDependent;
@@ -58,6 +60,14 @@ public class Main extends JavaPlugin implements Listener {
 		initAll();
 		ConfigOperations.updateAndLoadConfig();
 		finishInit();
+		
+		NameDifferences.init();
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new BukkitRunnable() {
+			@Override
+			public void run() {
+				GridOperations.listMissingResources();
+			}
+		});
 	}
 	
 	@Override

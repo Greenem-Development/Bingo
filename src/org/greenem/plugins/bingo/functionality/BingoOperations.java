@@ -61,7 +61,7 @@ public class BingoOperations {
 			String lowercase = m.name().toLowerCase();
 		    if (forbidden.contains(m) || lowercase.contains("legacy") || lowercase.contains("command") || lowercase.contains("spawn_egg") || lowercase.contains("infested")
 		    		 || lowercase.contains("wall_sign") || lowercase.contains("wall_banner") || lowercase.contains("wall_fan") || lowercase.contains("candle_cake")
-		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted")) { // check for misspelling TODO
+		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted") || lowercase.contains("banner_pattern")) { // check for misspelling TODO
 		        it.remove();
 		    }
 		}
@@ -119,10 +119,22 @@ public class BingoOperations {
 		forbidden.add(Material.TWISTING_VINES_PLANT);
 		forbidden.add(Material.WEEPING_VINES_PLANT); // chorus plant?
 		forbidden.add(Material.BUNDLE);
-		forbidden.add(Material.WRITTEN_BOOK); // ???
+//		forbidden.add(Material.WRITTEN_BOOK); // ???
 		forbidden.add(Material.KNOWLEDGE_BOOK);
+		forbidden.add(Material.JIGSAW); // wtf even is this
 //		forbidden.add(Material.BLACK_CANDLE_CAKE); // maybe allow some technical blocks and download textures? (3d, also only when "stand on blocks" is enabled)
+		forbidden.add(Material.DEBUG_STICK);
+		forbidden.add(Material.CARROTS);
+		forbidden.add(Material.POTATOES);
+		forbidden.add(Material.BAMBOO_SAPLING); // ?
+		forbidden.add(Material.VOID_AIR);
+		forbidden.add(Material.BIG_DRIPLEAF_STEM); // others?
+		forbidden.add(Material.BIG_DRIPLEAF);
+		forbidden.add(Material.SMALL_DRIPLEAF);
+		forbidden.add(Material.DIRT_PATH);
+		forbidden.add(Material.FARMLAND);
 		
+		//		forbidden.add(Material.CREEPER_BANNER_PATTERN); // later
 		forbidden.add(Material.TIPPED_ARROW); // Functionality later
 		forbidden.add(Material.ENCHANTED_BOOK); // Functionality later
 	}

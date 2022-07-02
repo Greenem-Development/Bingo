@@ -25,7 +25,7 @@ import org.greenem.plugins.bingo.functionality.BingoOperations;
 
 public class GridOperations {
 	private static int betweenItems = 5;
-	private static int imageResolution = 25; // 16 - default, 25 - max for 5*5, also can try 32
+	private static int imageResolution = 16; // 16 - default, 25 - max for 5*5, also can try 32
 	
 	public static Map<Material, String> nameComparison;
 	
@@ -39,7 +39,7 @@ public class GridOperations {
 		return result;
 	}
 	
-	public static void scanTexturesNames() {
+	public static void scanTexturesNames() { //TODO WTF
 		nameComparison = new HashMap<>();
 		File dir = new File("G:\\for everything\\5\\хрень\\3dTextures");
 		File output = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output");
@@ -171,28 +171,67 @@ public class GridOperations {
 					e.printStackTrace();
 				}
 				
+				String theName = References.materialList.get(counter).name().toLowerCase();
+				if(NameDifferences.differences.containsKey(theName)) {
+					theName = NameDifferences.differences.get(theName); 
+				}
+				
 				try {
-					texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\" + References.materialList.get(counter).name() + ".png"));
+					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
 				} catch (IOException e) {
 //					e.printStackTrace();
-					try {
-						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest\\" + References.materialList.get(counter).name() + ".png"));
-					} catch (IOException e1) {
-//						e1.printStackTrace();
-//						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
-					}
+//					try {
+//						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest\\" + References.materialList.get(counter).name() + ".png"));
+//					} catch (IOException e1) {
+////						e1.printStackTrace();
+////						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
+//					}
 				}
 //				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
 				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), imageResolution, imageResolution, null);
 				counter++;
 			}
 		}
-		try {
-			g.drawImage(ImageIO.read(new File("G:\\for everything\\картинки\\Compass_JE3_BE3.webp")), 0, 0, null);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+//		try {
+//			g.drawImage(ImageIO.read(new File("G:\\for everything\\картинки\\Compass_JE3_BE3.webp")), 0, 0, null);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
 		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
+		try {
+			ImageIO.write(target, "png", outputfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void generateTESTImage() { // TODO maybe custom modes of the map? Like open in front of everything + esc
+		// and load back to References TODO
+		int[] grid = generateLayout(1);
+		int width = grid[0];
+		int height = getGridHeight(grid);
+		int atTheSide = 10;
+		int x = 2 * atTheSide + getSideSize(width) - betweenItems;
+		int y = 2 * atTheSide + getSideSize(height) - betweenItems;
+		int max = x;
+		if(y>x) max = y;
+		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		Graphics2D g = (Graphics2D) target.getGraphics();
+		g.setColor(Color.GRAY);
+		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+//		g.setColor(Color.RED);
+//		g.fillRect(0, 0, atTheSide, atTheSide);
+//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+		Material m = Material.DIRT;
+		BufferedImage texture = null;
+		String theName = m.name().toLowerCase();
+		try {
+			texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		g.drawImage(texture, 0, 0, target.getWidth(), target.getHeight(), null);
+		File outputfile = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
 		try {
 			ImageIO.write(target, "png", outputfile);
 		} catch (IOException e) {
@@ -259,5 +298,24 @@ public class GridOperations {
 				return;
 			}
 		}
+	}
+	
+	public static void listMissingResources() {
+//		String s = "";
+		BufferedImage texture = null;
+		for (Material m : BingoOperations.allowed) {
+			String theName = m.name().toLowerCase();
+			if(NameDifferences.differences.containsKey(theName)) {
+				theName = NameDifferences.differences.get(theName); 
+			}
+			
+			try {
+				texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+			} catch (IOException e) {
+//				s += "differences.put(\"" + m.name().toLowerCase() + "\", \"\");\n";
+				debug(ChatColor.RED + "Missing texture for " + ChatColor.WHITE + m.name().toLowerCase());
+			}
+		}
+//		debug(s);
 	}
 }

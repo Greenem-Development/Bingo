@@ -206,22 +206,10 @@ public class GridOperations {
 	}
 	
 	public static void generateTESTImage() { // TODO maybe custom modes of the map? Like open in front of everything + esc
-		// and load back to References TODO
-		int[] grid = generateLayout(1);
-		int width = grid[0];
-		int height = getGridHeight(grid);
-		int atTheSide = 10;
-		int x = 2 * atTheSide + getSideSize(width) - betweenItems;
-		int y = 2 * atTheSide + getSideSize(height) - betweenItems;
-		int max = x;
-		if(y>x) max = y;
-		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
-		Graphics2D g = (Graphics2D) target.getGraphics();
-		g.setColor(Color.GRAY);
-		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
-//		g.setColor(Color.RED);
-//		g.fillRect(0, 0, atTheSide, atTheSide);
-//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+		int max = 128;
+		int block = 16;
+		BufferedImage preTarget = new BufferedImage(block, block, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		Graphics2D preG = (Graphics2D) preTarget.getGraphics();
 		Material m = Material.DIRT;
 		BufferedImage texture = null;
 		String theName = m.name().toLowerCase();
@@ -230,7 +218,15 @@ public class GridOperations {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		g.drawImage(texture, 0, 0, target.getWidth(), target.getHeight(), null);
+		preG.drawImage(texture, 0, 0, block, block, null);
+		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		Graphics2D g = (Graphics2D) target.getGraphics();
+		g.setColor(Color.GRAY);
+		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, 16, 16);
+//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+		g.drawImage(texture, 0, 0, block, block, null);
 		File outputfile = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
 		try {
 			ImageIO.write(target, "png", outputfile);

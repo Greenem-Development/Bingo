@@ -107,6 +107,11 @@ public class Main extends JavaPlugin implements Listener {
 				test1(sender);
 			}
 		}
+		else if(cmd.getName().equalsIgnoreCase("bgtestresolution")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				test2(sender);
+			}
+		}
 		return true;
 	}
     
@@ -154,6 +159,25 @@ public class Main extends JavaPlugin implements Listener {
 		view.getRenderers().clear();
 		TaskRenderer renderer = new TaskRenderer();
 		File f = new File("G:\\for everything\\5\\хрень\\generated.png");
+		if(renderer.init(f)) {
+			view.addRenderer(renderer);
+			ItemStack is = new ItemStack(Material.FILLED_MAP);
+			MapMeta meta = (MapMeta) is.getItemMeta();
+			meta.setMapView(view);
+			is.setItemMeta(meta);
+			if(sender instanceof Player) ((Player) sender).getInventory().addItem(is);
+		} else {
+			debug(ChatColor.RED + "Rendering map view error, can't find the file");
+			return;
+		}
+	}
+	
+	private void test2(CommandSender sender) {
+		GridOperations.generateTESTImage();
+		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
+		view.getRenderers().clear();
+		TaskRenderer renderer = new TaskRenderer();
+		File f = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
 		if(renderer.init(f)) {
 			view.addRenderer(renderer);
 			ItemStack is = new ItemStack(Material.FILLED_MAP);

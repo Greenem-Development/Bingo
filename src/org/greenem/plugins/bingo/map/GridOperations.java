@@ -156,6 +156,8 @@ public class GridOperations {
 		int k = 1;
 		int betweenItems0 = betweenItems;
 		int block0 = imageResolution;
+		boolean hasAlreadyRenderedFirstRow = false;
+		boolean hasAlreadyRenderedLastRow = false;
 		if(max>65 && max<128) {
 			k = Math.floorDiv(128, max); // TODO
 			max = 128;
@@ -198,14 +200,26 @@ public class GridOperations {
 		g.fillRect(0, max-atTheSide, max, atTheSide);
 		
 		int counter = 0;
+		int lastNext = 0;
+		boolean drawYellow = false;
 		for(int i = 0; i < grid.length; i++) {
 			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i], block0, betweenItems0)  - betweenItems0)) / 2;
+			
+			int next = getHowManySameDown(grid, i);
 			g.setColor(Color.YELLOW);
-			g.drawRect(0, 0, atTheSide + offset, max);
-			g.drawRect(0, 0, max, atTheSide);
-			g.drawRect(max-(atTheSide + offset), 0, offset, max);
-			g.drawRect(0, max-atTheSide, max, atTheSide);
-//			g.drawRect(0, 0, max, offset);
+			drawYellow = lastNext <= next;
+			debug(next + " " + drawYellow);
+			
+			if(drawYellow) {
+				g.fillRect(0, atTheSide + i*betweenItems0 + block0*(i), atTheSide + offset, block0*(next+1)+betweenItems0*next);
+				g.fillRect(max-(atTheSide + offset)-1, atTheSide + i*betweenItems0 + block0*(i), offset+atTheSide+1, block0*(next+1)+betweenItems0*next);
+			}
+			
+//			g.drawRect(0, 0, max, atTheSide);
+//			g.drawRect(0, max-atTheSide, max, atTheSide);
+			
+			lastNext = next;
+			
 			for(int j = 0; j < grid[i]; j++) {
 				BufferedImage texture = null;
 				try {
@@ -231,7 +245,20 @@ public class GridOperations {
 //					}
 				}
 //				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
-				g.drawImage(texture, atTheSide + getSideSize(j, block0, betweenItems0) + offset, atTheSide + getSideSize(i, block0, betweenItems0), block0, block0, null);
+				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
+				int curY = atTheSide + getSideSize(i, block0, betweenItems0);
+				g.drawImage(texture, curX, curY, block0, block0, null);
+				
+				if(!hasAlreadyRenderedFirstRow && i==0) {
+					g.fillRect(curX, 0, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
+					hasAlreadyRenderedFirstRow = true;
+				}
+				
+				if(!hasAlreadyRenderedLastRow && i==grid.length-1) {
+					g.fillRect(curX, max-atTheSide, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
+					hasAlreadyRenderedLastRow = true;
+				}
+				
 				g.setColor(Color.RED);
 				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0, atTheSide + getSideSize(i, block0, betweenItems0) + block0 - ((int)Math.ceil(block0/2))-1, betweenItems0, 1);
 				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0 - ((int)Math.ceil(block0/2))-1, atTheSide + getSideSize(i, block0, betweenItems0) + block0, 1, betweenItems0);
@@ -287,6 +314,15 @@ public class GridOperations {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static int getHowManySameDown(int[] grid, int current) {
+		int counter = 0;
+		for (int i = current+1; i < grid.length; i++) {
+			if(grid[i]==grid[current]) counter++;
+			else break;
+		}
+		return counter;
 	}
 	
 	private static int getSideSize(int amount, int block, int between) {

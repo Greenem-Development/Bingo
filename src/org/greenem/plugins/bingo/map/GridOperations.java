@@ -153,17 +153,28 @@ public class GridOperations {
 		int y = 2 * atTheSide + getSideSize(height) - betweenItems;
 		int max = x;
 		if(y>x) max = y;
+		int change = 1;
+		if(max>65 && max<128) {
+			change = Math.floorDiv(128, max); // TODO
+			max = 128;
+		}
+		
 		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 //		debug(x + " " + y + " " + max);
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
-//		g.setColor(Color.RED);
 //		g.fillRect(0, 0, atTheSide, atTheSide);
 //		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
 		int counter = 0;
 		for(int i = 0; i < grid.length; i++) {
 			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i])  - betweenItems)) / 2;
+			g.setColor(Color.YELLOW);
+			g.drawRect(0, 0, atTheSide + offset, max);
+			g.drawRect(0, 0, max, atTheSide);
+			g.drawRect(max-(atTheSide + offset), 0, offset, max);
+			g.drawRect(0, max-atTheSide, max, atTheSide);
+//			g.drawRect(0, 0, max, offset);
 			for(int j = 0; j < grid[i]; j++) {
 				BufferedImage texture = null;
 				try {
@@ -190,6 +201,9 @@ public class GridOperations {
 				}
 //				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
 				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), imageResolution, imageResolution, null);
+				g.setColor(Color.RED);
+				g.drawRect(atTheSide + getSideSize(j) + offset + imageResolution, atTheSide + getSideSize(i) + imageResolution, betweenItems, 1);
+				g.drawRect(atTheSide + getSideSize(j) + offset + imageResolution, atTheSide + getSideSize(i) + imageResolution, 1, betweenItems);
 				counter++;
 			}
 		}
@@ -198,9 +212,18 @@ public class GridOperations {
 //		} catch (IOException e1) {
 //			e1.printStackTrace();
 //		}
+		BufferedImage finalImage = target;
+		if(max>65 && max<118) {
+			BufferedImage scaled = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D gS = (Graphics2D) scaled.getGraphics();
+			gS.drawImage(target, 0, 0, 128, 128, null);
+			finalImage = scaled; // what if a bit earlier? (link variable)
+			debug("scaled");
+		}
+		References.gridMainImage = finalImage;
 		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
 		try {
-			ImageIO.write(target, "png", outputfile);
+			ImageIO.write(finalImage, "png", outputfile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -211,7 +234,7 @@ public class GridOperations {
 		if(!StandartUtils.isInteger(args[0])) return;
 		int fillResolution = Integer.parseInt(args[0]); // 99;
 		int block = 16;
-		Material m = Material.DROPPER;
+		Material m = Material.DEAD_FIRE_CORAL_BLOCK;
 		BufferedImage texture = null;
 		String theName = m.name().toLowerCase();
 		try {

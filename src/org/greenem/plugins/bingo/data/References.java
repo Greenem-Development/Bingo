@@ -1,5 +1,6 @@
 package org.greenem.plugins.bingo.data;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,4 +16,5 @@ public class References {
 	public static Map<String, ArrayList<Material>> playersProgress = new HashMap<>();
 	public static boolean inGame = false;
 	public static int amountOfitems;
+	public static BufferedImage gridMainImage;
 }

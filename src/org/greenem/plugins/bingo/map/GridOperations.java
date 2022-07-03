@@ -149,26 +149,57 @@ public class GridOperations {
 		int width = grid[0];
 		int height = getGridHeight(grid);
 		int atTheSide = 10;
-		int x = 2 * atTheSide + getSideSize(width) - betweenItems;
-		int y = 2 * atTheSide + getSideSize(height) - betweenItems;
+		int x = 2 * atTheSide + getSideSize(width, imageResolution, betweenItems) - betweenItems;
+		int y = 2 * atTheSide + getSideSize(height, imageResolution, betweenItems) - betweenItems;
 		int max = x;
 		if(y>x) max = y;
-		int change = 1;
+		int k = 1;
+		int betweenItems0 = betweenItems;
+		int block0 = imageResolution;
 		if(max>65 && max<128) {
-			change = Math.floorDiv(128, max); // TODO
+			k = Math.floorDiv(128, max); // TODO
 			max = 128;
+			int amountOfItems = getMaxGridAmount(grid);
+			boolean found = false;
+			a1 : while (!found) {
+				for(int i = 0; i < 20; i++) {
+					for(int j = -1; j < 2; j+=2) {
+						i = i * j;
+						int totalBetween = max - (2*atTheSide + amountOfItems*(block0*k + i));
+						if(totalBetween % (amountOfItems-1) == 0) {
+							int newBetween = totalBetween / (amountOfItems-1);
+							if(newBetween >= betweenItems0) {
+								betweenItems0 = newBetween; // TODO!!!
+								block0 = block0*k + i; // TODO!!!
+								found = true;
+								break a1;
+							}
+						}
+					}
+				}
+				max++;
+			}
+//			int result = 2*atTheSide + amountOfItems*block0 + (amountOfItems-1)*betweenItems0;
+//			System.out.println(result + " " + max);
+//			System.out.println(atTheSide + " " + block0 + " " + betweenItems0 + " " + k);
 		}
 		
 		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
-//		debug(x + " " + y + " " + max);
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
 //		g.fillRect(0, 0, atTheSide, atTheSide);
 //		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+		
+		g.setColor(Color.GREEN);
+		g.fillRect(0, 0, atTheSide, max);
+		g.fillRect(0, 0, max, atTheSide);
+		g.fillRect(max-atTheSide, 0, atTheSide, max);
+		g.fillRect(0, max-atTheSide, max, atTheSide);
+		
 		int counter = 0;
 		for(int i = 0; i < grid.length; i++) {
-			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i])  - betweenItems)) / 2;
+			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i], block0, betweenItems0)  - betweenItems0)) / 2;
 			g.setColor(Color.YELLOW);
 			g.drawRect(0, 0, atTheSide + offset, max);
 			g.drawRect(0, 0, max, atTheSide);
@@ -200,10 +231,10 @@ public class GridOperations {
 //					}
 				}
 //				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
-				g.drawImage(texture, atTheSide + getSideSize(j) + offset, atTheSide + getSideSize(i), imageResolution, imageResolution, null);
+				g.drawImage(texture, atTheSide + getSideSize(j, block0, betweenItems0) + offset, atTheSide + getSideSize(i, block0, betweenItems0), block0, block0, null);
 				g.setColor(Color.RED);
-				g.drawRect(atTheSide + getSideSize(j) + offset + imageResolution, atTheSide + getSideSize(i) + imageResolution, betweenItems, 1);
-				g.drawRect(atTheSide + getSideSize(j) + offset + imageResolution, atTheSide + getSideSize(i) + imageResolution, 1, betweenItems);
+				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0, atTheSide + getSideSize(i, block0, betweenItems0) + block0 - ((int)Math.ceil(block0/2))-1, betweenItems0, 1);
+				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0 - ((int)Math.ceil(block0/2))-1, atTheSide + getSideSize(i, block0, betweenItems0) + block0, 1, betweenItems0);
 				counter++;
 			}
 		}
@@ -258,9 +289,9 @@ public class GridOperations {
 		}
 	}
 	
-	private static int getSideSize(int amount) {
-		int result = imageResolution * amount;
-		if(amount>0) result += betweenItems * (amount);
+	private static int getSideSize(int amount, int block, int between) {
+		int result = block * amount;
+		if(amount>0) result += between * (amount);
 		return result;
 	}
 	
@@ -270,6 +301,14 @@ public class GridOperations {
 			if(grid[i]!=0) counter++;
 		}
 		return counter;
+	}
+	
+	private static int getMaxGridAmount(int[] grid) {
+		int max = grid.length;
+		for (int i = 0; i < grid.length; i++) {
+			if(grid[i]>max) max = grid[i];
+		}
+		return max;
 	}
 	
 	public static int[] generateLayout(int cells) {

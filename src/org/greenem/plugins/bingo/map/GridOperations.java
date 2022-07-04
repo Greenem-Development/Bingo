@@ -25,10 +25,252 @@ import org.greenem.plugins.bingo.functionality.BingoOperations;
 import org.greenem.plugins.bingo.util.StandartUtils;
 
 public class GridOperations {
+	public static boolean drawDebugGrid = false;
+	
 	private static int betweenItems = 5;
 	private static int imageResolution = 16; // 16 - default, 25 - max for 5*5, also can try 32
 	
 	public static Map<Material, String> nameComparison;
+	
+	public static void generateImage(int items) { // TODO maybe custom modes of the map? Like open in front of everything + esc
+		int[] grid = generateLayout(items);
+		int width = grid[0];
+		int height = getGridHeight(grid);
+		int atTheSide = 10;
+		int x = 2 * atTheSide + getSideSize(width, imageResolution, betweenItems) - betweenItems;
+		int y = 2 * atTheSide + getSideSize(height, imageResolution, betweenItems) - betweenItems;
+		int max = x;
+		if(y>x) max = y;
+		float k = 1;
+		int betweenItems0 = betweenItems;
+		int block0 = imageResolution;
+		boolean hasAlreadyRenderedFirstRow = false;
+		boolean hasAlreadyRenderedLastRow = false;
+		if(max>65 && max<128) {
+//			k = (int) Math.floor((float) 128 / max); // TODO
+			k = (float) 128/max;
+			max = 128;
+			int amountOfItems = getMaxGridAmount(grid);
+			boolean found = false;
+			a1 : while (!found) {
+				for(int i = 0; i < 20; i++) {
+					for(int j = -1; j < 2; j+=2) {
+						i = i * j;
+						int totalBetween = (int) (max - (2*atTheSide + amountOfItems*(block0*k + i)));
+						if(totalBetween % (amountOfItems-1) == 0) {
+							int newBetween = totalBetween / (amountOfItems-1);
+							debug(newBetween);
+							if(newBetween >= betweenItems0) {
+								betweenItems0 = newBetween;
+								block0 = (int) (block0*k + i);
+								found = true;
+								break a1;
+							}
+						}
+					}
+				}
+				max++;
+			}
+			debug(atTheSide + " " + block0 + " " + betweenItems0 + " " + k);
+//			int result = 2*atTheSide + amountOfItems*block0 + (amountOfItems-1)*betweenItems0;
+//			debug(result == max);
+		}
+		
+		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		Graphics2D g = (Graphics2D) target.getGraphics();
+		g.setColor(Color.GRAY);
+		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+
+		if(drawDebugGrid) {
+		g.setColor(Color.GREEN);
+			g.fillRect(0, 0, atTheSide, max);
+			g.fillRect(0, 0, max, atTheSide);
+			g.fillRect(max-atTheSide, 0, atTheSide, max);
+			g.fillRect(0, max-atTheSide, max, atTheSide);
+		}
+		
+		int counter = 0;
+		int lastNext = 0;
+		boolean drawYellow = false;
+		for(int i = 0; i < grid.length; i++) {
+			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i], block0, betweenItems0)  - betweenItems0)) / 2;
+			
+			if(drawDebugGrid) {
+				int next = getHowManySameDown(grid, i);
+				g.setColor(Color.YELLOW);
+				drawYellow = lastNext <= next;
+				if(drawYellow) {
+					g.fillRect(0, atTheSide + i*betweenItems0 + block0*(i), atTheSide + offset, block0*(next+1)+betweenItems0*next);
+					g.fillRect(max-(atTheSide + offset)-1, atTheSide + i*betweenItems0 + block0*(i), offset+atTheSide+1, block0*(next+1)+betweenItems0*next);
+				}
+				lastNext = next;
+			}
+			
+			for(int j = 0; j < grid[i]; j++) {
+				BufferedImage texture = null;
+				try {
+					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\unknownTexture.png"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				String theName = References.materialList.get(counter).name().toLowerCase();
+				if(NameDifferences.differences.containsKey(theName)) {
+					theName = NameDifferences.differences.get(theName);
+				}
+				
+				try {
+					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+				} catch (IOException e) {
+					debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
+				}
+				
+				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
+				int curY = atTheSide + getSideSize(i, block0, betweenItems0);
+				g.drawImage(texture, curX, curY, block0, block0, null);
+				
+				if(drawDebugGrid) {
+					if(!hasAlreadyRenderedFirstRow && i==0) {
+						g.fillRect(curX, 0, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
+						hasAlreadyRenderedFirstRow = true;
+					}
+					
+					if(!hasAlreadyRenderedLastRow && i==grid.length-1) {
+						g.fillRect(curX, max-atTheSide, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
+						hasAlreadyRenderedLastRow = true;
+					}
+					
+					g.setColor(Color.RED);
+					g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0, atTheSide + getSideSize(i, block0, betweenItems0) + block0 - ((int)Math.ceil(block0/2))-1, betweenItems0, 1); // ceil? (and why it works like that)
+					g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0 - ((int)Math.ceil(block0/2))-1, atTheSide + getSideSize(i, block0, betweenItems0) + block0, 1, betweenItems0);
+				}
+				counter++;
+			}
+		}
+		
+//		BufferedImage finalImage = target;
+//		if(max>65 && max<118) {
+//			BufferedImage scaled = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+//			Graphics2D gS = (Graphics2D) scaled.getGraphics();
+//			gS.drawImage(target, 0, 0, 128, 128, null);
+//			finalImage = scaled; // what if a bit earlier? (link variable)
+//			debug("scaled");
+//		}
+		References.gridMainImage = target;
+		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
+		try {
+			ImageIO.write(target, "png", outputfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void generateTESTImage(String[] args) { // TODO maybe custom modes of the map? Like open in front of everything + esc
+		if(args.length==0) return;
+		if(!StandartUtils.isInteger(args[0])) return;
+		int fillResolution = Integer.parseInt(args[0]); // 99;
+		int block = 16;
+		Material m = Material.DEAD_FIRE_CORAL_BLOCK;
+		BufferedImage texture = null;
+		String theName = m.name().toLowerCase();
+		try {
+			texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		BufferedImage target = new BufferedImage(fillResolution, fillResolution, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
+		Graphics2D g = (Graphics2D) target.getGraphics();
+		g.setColor(Color.GRAY);
+		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, 16, 16);
+//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
+		g.drawImage(texture, 0, 0, block, block, null);
+		File outputfile = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
+		try {
+			ImageIO.write(target, "png", outputfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static int getHowManySameDown(int[] grid, int current) {
+		int counter = 0;
+		for (int i = current+1; i < grid.length; i++) {
+			if(grid[i]==grid[current]) counter++;
+			else break;
+		}
+		return counter;
+	}
+	
+	private static int getSideSize(int amount, int block, int between) {
+		int result = block * amount;
+		if(amount>0) result += between * (amount);
+		return result;
+	}
+	
+	private static int getGridHeight(int[] grid) {
+		int counter = 0;
+		for (int i = 0; i < grid.length; i++) {
+			if(grid[i]!=0) counter++;
+		}
+		return counter;
+	}
+	
+	private static int getMaxGridAmount(int[] grid) {
+		int max = grid.length;
+		for (int i = 0; i < grid.length; i++) {
+			if(grid[i]>max) max = grid[i];
+		}
+		return max;
+	}
+	
+	public static int[] generateLayout(int cells) {
+//		ArrayList<ArrayList<Integer>> grid = new ArrayList<>();
+		int base = (int) Math.ceil(Math.sqrt(cells));
+		
+		int[] grid = new int[base];
+		for (int i = 0; i < grid.length; i++) {
+			grid[i] = base;
+		}
+		
+		int currently = base * base;
+		
+		while(currently > cells) { // && currently - cells > getRightCells(grid))
+			if(getRightCells(grid)>=grid[grid.length - 1]) {
+				removeMostBottomRight(grid);
+			} else {
+				grid[grid.length - 1]--;
+			}
+			currently--;
+		}
+		return grid;
+		
+//		System.out.println("Layout for " + cells + " squares:");
+//		for (int i = 0; i < grid.length; i++) {
+//			System.out.println("* ".repeat(grid[i]));
+//		}
+	}
+	
+	private static int getRightCells(int[] grid) {
+		int max = 0;
+		int counter = 0;
+		for (int i = 0; i < grid.length; i++) {
+			if(grid[i] == grid[0]) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+	
+	private static void removeMostBottomRight(int[] grid) {
+		for(int i = grid.length-1; i >= 0; i--) {
+			if(grid[i] == grid[0]) {
+				grid[i]--;
+				return;
+			}
+		}
+	}
 	
 	public static String sortWords(String s) {
 		String[] arr = s.split("_");
@@ -140,257 +382,6 @@ public class GridOperations {
 //				}
 			}
 			FileUtil.copy(image, new File(destination, name + ".png"));
-		}
-	}
-	
-	public static void generateImage(int items) { // TODO maybe custom modes of the map? Like open in front of everything + esc
-		// and load back to References TODO
-		int[] grid = generateLayout(items);
-		int width = grid[0];
-		int height = getGridHeight(grid);
-		int atTheSide = 10;
-		int x = 2 * atTheSide + getSideSize(width, imageResolution, betweenItems) - betweenItems;
-		int y = 2 * atTheSide + getSideSize(height, imageResolution, betweenItems) - betweenItems;
-		int max = x;
-		if(y>x) max = y;
-		int k = 1;
-		int betweenItems0 = betweenItems;
-		int block0 = imageResolution;
-		boolean hasAlreadyRenderedFirstRow = false;
-		boolean hasAlreadyRenderedLastRow = false;
-		if(max>65 && max<128) {
-			k = Math.floorDiv(128, max); // TODO
-			max = 128;
-			int amountOfItems = getMaxGridAmount(grid);
-			boolean found = false;
-			a1 : while (!found) {
-				for(int i = 0; i < 20; i++) {
-					for(int j = -1; j < 2; j+=2) {
-						i = i * j;
-						int totalBetween = max - (2*atTheSide + amountOfItems*(block0*k + i));
-						if(totalBetween % (amountOfItems-1) == 0) {
-							int newBetween = totalBetween / (amountOfItems-1);
-							if(newBetween >= betweenItems0) {
-								betweenItems0 = newBetween; // TODO!!!
-								block0 = block0*k + i; // TODO!!!
-								found = true;
-								break a1;
-							}
-						}
-					}
-				}
-				max++;
-			}
-//			int result = 2*atTheSide + amountOfItems*block0 + (amountOfItems-1)*betweenItems0;
-//			System.out.println(result + " " + max);
-//			System.out.println(atTheSide + " " + block0 + " " + betweenItems0 + " " + k);
-		}
-		
-		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
-		Graphics2D g = (Graphics2D) target.getGraphics();
-		g.setColor(Color.GRAY);
-		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
-//		g.fillRect(0, 0, atTheSide, atTheSide);
-//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
-		
-		g.setColor(Color.GREEN);
-		g.fillRect(0, 0, atTheSide, max);
-		g.fillRect(0, 0, max, atTheSide);
-		g.fillRect(max-atTheSide, 0, atTheSide, max);
-		g.fillRect(0, max-atTheSide, max, atTheSide);
-		
-		int counter = 0;
-		int lastNext = 0;
-		boolean drawYellow = false;
-		for(int i = 0; i < grid.length; i++) {
-			int offset = (target.getWidth() - (2 * atTheSide + getSideSize(grid[i], block0, betweenItems0)  - betweenItems0)) / 2;
-			
-			int next = getHowManySameDown(grid, i);
-			g.setColor(Color.YELLOW);
-			drawYellow = lastNext <= next;
-			debug(next + " " + drawYellow);
-			
-			if(drawYellow) {
-				g.fillRect(0, atTheSide + i*betweenItems0 + block0*(i), atTheSide + offset, block0*(next+1)+betweenItems0*next);
-				g.fillRect(max-(atTheSide + offset)-1, atTheSide + i*betweenItems0 + block0*(i), offset+atTheSide+1, block0*(next+1)+betweenItems0*next);
-			}
-			
-//			g.drawRect(0, 0, max, atTheSide);
-//			g.drawRect(0, max-atTheSide, max, atTheSide);
-			
-			lastNext = next;
-			
-			for(int j = 0; j < grid[i]; j++) {
-				BufferedImage texture = null;
-				try {
-					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\unknownTexture.png"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				String theName = References.materialList.get(counter).name().toLowerCase();
-				if(NameDifferences.differences.containsKey(theName)) {
-					theName = NameDifferences.differences.get(theName); 
-				}
-				
-				try {
-					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
-				} catch (IOException e) {
-//					e.printStackTrace();
-//					try {
-//						texture = ImageIO.read(new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest\\" + References.materialList.get(counter).name() + ".png"));
-//					} catch (IOException e1) {
-////						e1.printStackTrace();
-////						debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
-//					}
-				}
-//				debug(offset + " " + getSideSize(j) + " " + getSideSize(i));
-				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
-				int curY = atTheSide + getSideSize(i, block0, betweenItems0);
-				g.drawImage(texture, curX, curY, block0, block0, null);
-				
-				if(!hasAlreadyRenderedFirstRow && i==0) {
-					g.fillRect(curX, 0, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
-					hasAlreadyRenderedFirstRow = true;
-				}
-				
-				if(!hasAlreadyRenderedLastRow && i==grid.length-1) {
-					g.fillRect(curX, max-atTheSide, block0*grid[i] + betweenItems0*(grid[i]-1), atTheSide);
-					hasAlreadyRenderedLastRow = true;
-				}
-				
-				g.setColor(Color.RED);
-				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0, atTheSide + getSideSize(i, block0, betweenItems0) + block0 - ((int)Math.ceil(block0/2))-1, betweenItems0, 1);
-				g.drawRect(atTheSide + getSideSize(j, block0, betweenItems0) + offset + block0 - ((int)Math.ceil(block0/2))-1, atTheSide + getSideSize(i, block0, betweenItems0) + block0, 1, betweenItems0);
-				counter++;
-			}
-		}
-//		try {
-//			g.drawImage(ImageIO.read(new File("G:\\for everything\\картинки\\Compass_JE3_BE3.webp")), 0, 0, null);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-		BufferedImage finalImage = target;
-		if(max>65 && max<118) {
-			BufferedImage scaled = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D gS = (Graphics2D) scaled.getGraphics();
-			gS.drawImage(target, 0, 0, 128, 128, null);
-			finalImage = scaled; // what if a bit earlier? (link variable)
-			debug("scaled");
-		}
-		References.gridMainImage = finalImage;
-		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
-		try {
-			ImageIO.write(finalImage, "png", outputfile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void generateTESTImage(String[] args) { // TODO maybe custom modes of the map? Like open in front of everything + esc
-		if(args.length==0) return;
-		if(!StandartUtils.isInteger(args[0])) return;
-		int fillResolution = Integer.parseInt(args[0]); // 99;
-		int block = 16;
-		Material m = Material.DEAD_FIRE_CORAL_BLOCK;
-		BufferedImage texture = null;
-		String theName = m.name().toLowerCase();
-		try {
-			texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		BufferedImage target = new BufferedImage(fillResolution, fillResolution, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
-		Graphics2D g = (Graphics2D) target.getGraphics();
-		g.setColor(Color.GRAY);
-		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, 16, 16);
-//		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
-		g.drawImage(texture, 0, 0, block, block, null);
-		File outputfile = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
-		try {
-			ImageIO.write(target, "png", outputfile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private static int getHowManySameDown(int[] grid, int current) {
-		int counter = 0;
-		for (int i = current+1; i < grid.length; i++) {
-			if(grid[i]==grid[current]) counter++;
-			else break;
-		}
-		return counter;
-	}
-	
-	private static int getSideSize(int amount, int block, int between) {
-		int result = block * amount;
-		if(amount>0) result += between * (amount);
-		return result;
-	}
-	
-	private static int getGridHeight(int[] grid) {
-		int counter = 0;
-		for (int i = 0; i < grid.length; i++) {
-			if(grid[i]!=0) counter++;
-		}
-		return counter;
-	}
-	
-	private static int getMaxGridAmount(int[] grid) {
-		int max = grid.length;
-		for (int i = 0; i < grid.length; i++) {
-			if(grid[i]>max) max = grid[i];
-		}
-		return max;
-	}
-	
-	public static int[] generateLayout(int cells) {
-//		ArrayList<ArrayList<Integer>> grid = new ArrayList<>();
-		int base = (int) Math.ceil(Math.sqrt(cells));
-		
-		int[] grid = new int[base];
-		for (int i = 0; i < grid.length; i++) {
-			grid[i] = base;
-		}
-		
-		int currently = base * base;
-		
-		while(currently > cells) { // && currently - cells > getRightCells(grid))
-			if(getRightCells(grid)>=grid[grid.length - 1]) {
-				removeMostBottomRight(grid);
-			} else {
-				grid[grid.length - 1]--;
-			}
-			currently--;
-		}
-		return grid;
-		
-//		System.out.println("Layout for " + cells + " squares:");
-//		for (int i = 0; i < grid.length; i++) {
-//			System.out.println("* ".repeat(grid[i]));
-//		}
-	}
-	
-	private static int getRightCells(int[] grid) {
-		int max = 0;
-		int counter = 0;
-		for (int i = 0; i < grid.length; i++) {
-			if(grid[i] == grid[0]) {
-				counter++;
-			}
-		}
-		return counter;
-	}
-	
-	private static void removeMostBottomRight(int[] grid) {
-		for(int i = grid.length-1; i >= 0; i--) {
-			if(grid[i] == grid[0]) {
-				grid[i]--;
-				return;
-			}
 		}
 	}
 	

@@ -103,9 +103,15 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestmap")){
-			if(isSenderAPlayerOrConsole(sender)) {
-				test1(sender);
-			}
+//			if(isSenderAPlayerOrConsole(sender)) {
+//				Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), new Runnable() {
+//					@Override
+//					public void run() {
+//						test1(sender);
+//					}
+//				});
+//			}
+			test1(sender);
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestresolution")){
 			if(isSenderAPlayerOrConsole(sender)) {
@@ -155,26 +161,31 @@ public class Main extends JavaPlugin implements Listener {
 	
 	private void test1(CommandSender sender) {
 		GridOperations.generateImage(References.amountOfitems);
-		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
-		view.getRenderers().clear();
-		TaskRenderer renderer = new TaskRenderer();
-		File f = new File("G:\\for everything\\5\\хрень\\generated.png");
-		if(renderer.init(f)) {
-			view.addRenderer(renderer);
-			ItemStack is = new ItemStack(Material.FILLED_MAP);
-			MapMeta meta = (MapMeta) is.getItemMeta();
-			meta.setMapView(view);
-			is.setItemMeta(meta);
-			if(sender instanceof Player) {
-				Player p = (Player) sender;
-				p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-				p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
-				p.getInventory().addItem(is);
-			}
-		} else {
-			debug(ChatColor.RED + "Rendering map view error, can't find the file");
-			return;
-		}
+//		Bukkit.getScheduler().runTask(this, new Runnable() {
+//			@Override
+//			public void run() {
+				MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
+				view.getRenderers().clear();
+				TaskRenderer renderer = new TaskRenderer();
+				File f = new File("G:\\for everything\\5\\хрень\\generated.png");
+				if(renderer.init(f)) {
+					view.addRenderer(renderer);
+					ItemStack is = new ItemStack(Material.FILLED_MAP);
+					MapMeta meta = (MapMeta) is.getItemMeta();
+					meta.setMapView(view);
+					is.setItemMeta(meta);
+					if(sender instanceof Player) {
+						Player p = (Player) sender;
+						p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+						p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+						p.getInventory().addItem(is);
+					}
+				} else {
+					debug(ChatColor.RED + "Rendering map view error, can't find the file");
+					return;
+				}
+//			}
+//		});
 	}
 	
 	private void test2(CommandSender sender, String[] args) {

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -95,5 +96,6 @@ public class SavingData {
 				e.printStackTrace();
 			}
 		}
+		References.playersProgress = new HashMap<>();
 	}
 }

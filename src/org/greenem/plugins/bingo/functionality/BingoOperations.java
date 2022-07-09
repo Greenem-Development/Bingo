@@ -24,6 +24,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.util.FileUtil;
+import org.greenem.plugins.bingo.config.ConfigData;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.files.SavingData;
 
@@ -35,22 +36,26 @@ public class BingoOperations {
 	public static ArrayList<Material> allMaterials = new ArrayList<>(Arrays.asList(Material.values()));
 	//  new ArrayList<>(Arrays.asList(Material.WATER, Material.ACACIA_BOAT, Material.CAVE_SPIDER_SPAWN_EGG, Material.ANDESITE_STAIRS));
 	public static ArrayList<Material> forbidden = new ArrayList<>();
+	public static ArrayList<Material> forbidden1_19 = new ArrayList<>();
+	public static ArrayList<Material> forbidden1_17_1_18 = new ArrayList<>();
 	public static ArrayList<Material> allowed = new ArrayList<>();
 	
 	public static ArrayList<Material> generateArray(int length) {
 		ArrayList<Material> ms = new ArrayList<>();
+		ArrayList<Material> allowedCopy = (ArrayList<Material>) allowed.clone();
 		for (int i = 0; i < length; i++) {
 			int a = 0;
-			int r = rand.nextInt(allowed.size());
+			int r = rand.nextInt(allowedCopy.size());
 //			debug(r + " " + allowed.size());
-			Material m = allowed.get(r); // includes?
+			Material m = allowedCopy.get(r); // includes?
 			ms.add(m);
+			allowedCopy.remove(r);
 		}
 		return ms;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void initAllowed() {
+	public static void initAllowed() { // TODO DO WHEN RELOADING CONFIG SOMEHOW!!!
 		allowed = (ArrayList<Material>) allMaterials.clone();
 		for (Iterator<Material> it = allowed.iterator(); it.hasNext(); ) {
 			Material m = it.next();
@@ -59,15 +64,41 @@ public class BingoOperations {
 			// can players use that item?
 			// do they need to keep all of them to the end? (config, default: false)
 			String lowercase = m.name().toLowerCase();
+			try { if(forbidden1_19.contains(m)) { it.remove(); } } catch (NoSuchFieldError e) {}
+			try { if(forbidden1_17_1_18.contains(m)) { it.remove(); } } catch (NoSuchFieldError e) {}
 		    if (forbidden.contains(m) || lowercase.contains("legacy") || lowercase.contains("command") || lowercase.contains("spawn_egg") || lowercase.contains("infested")
 		    		 || lowercase.contains("wall_sign") || lowercase.contains("wall_banner") || lowercase.contains("wall_fan") || lowercase.contains("candle_cake")
-		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted") || lowercase.contains("banner_pattern")) { // check for misspelling TODO
+		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted") || lowercase.contains("banner_pattern")) { // TODO check for misspelling
 		        it.remove();
+		    }
+		    else if(!ConfigData.allowEndDimensionItems || !ConfigData.allowEndCityItems || !ConfigData.allowDragonEgg) {
+		    	if(removeEndItem(m, lowercase)) {
+		    		it.remove();
+		    	}
 		    }
 		}
 	}
 	
-	public static void initForbidden() {
+	public static void initForbidden1_19() { // TODO what about existing, but only for /give (1.18 sculk)
+		forbidden1_19.add(Material.REINFORCED_DEEPSLATE);
+	}
+	
+	public static void initForbidden1_17_1_18() {
+		forbidden1_17_1_18.add(Material.POWDER_SNOW);
+		forbidden1_17_1_18.add(Material.AMETHYST_CLUSTER);
+		forbidden1_17_1_18.add(Material.BUDDING_AMETHYST);
+		forbidden1_17_1_18.add(Material.LARGE_AMETHYST_BUD);
+		forbidden1_17_1_18.add(Material.SMALL_AMETHYST_BUD);
+		forbidden1_17_1_18.add(Material.MEDIUM_AMETHYST_BUD);
+		forbidden1_17_1_18.add(Material.LIGHT);
+		forbidden1_17_1_18.add(Material.BIG_DRIPLEAF_STEM); // others?
+		forbidden1_17_1_18.add(Material.BIG_DRIPLEAF);
+		forbidden1_17_1_18.add(Material.SMALL_DRIPLEAF);
+	}
+	
+	public static void initForbidden() { // what about renamed
+		try { initForbidden1_19(); } catch (NoSuchFieldError e) {}
+		try { initForbidden1_17_1_18(); } catch (NoSuchFieldError e) {}
 		forbidden.add(Material.END_PORTAL);
 		forbidden.add(Material.END_PORTAL_FRAME);
 		forbidden.add(Material.END_GATEWAY);
@@ -87,13 +118,7 @@ public class BingoOperations {
 		forbidden.add(Material.BEDROCK);
 		forbidden.add(Material.BARRIER);
 		forbidden.add(Material.SNOW);
-		forbidden.add(Material.AMETHYST_CLUSTER);
-		forbidden.add(Material.BUDDING_AMETHYST);
-		forbidden.add(Material.LARGE_AMETHYST_BUD);
-		forbidden.add(Material.SMALL_AMETHYST_BUD);
-		forbidden.add(Material.MEDIUM_AMETHYST_BUD);
 		forbidden.add(Material.CHORUS_PLANT); // think again
-		forbidden.add(Material.LIGHT);
 		forbidden.add(Material.STRUCTURE_BLOCK);
 		forbidden.add(Material.STRUCTURE_VOID);
 //		forbidden.add(Material.LEGACY_BED_BLOCK); //?????
@@ -128,11 +153,12 @@ public class BingoOperations {
 		forbidden.add(Material.POTATOES);
 		forbidden.add(Material.BAMBOO_SAPLING); // ?
 		forbidden.add(Material.VOID_AIR);
-		forbidden.add(Material.BIG_DRIPLEAF_STEM); // others?
-		forbidden.add(Material.BIG_DRIPLEAF);
-		forbidden.add(Material.SMALL_DRIPLEAF);
 		forbidden.add(Material.DIRT_PATH);
 		forbidden.add(Material.FARMLAND);
+//		forbidden.add(Material.POTION); // TODO functionality, also other metas
+//		forbidden.add(Material.SPLASH_POTION);
+//		forbidden.add(Material.LINGERING_POTION);
+		
 		
 		//		forbidden.add(Material.CREEPER_BANNER_PATTERN); // later
 		forbidden.add(Material.TIPPED_ARROW); // Functionality later
@@ -140,6 +166,7 @@ public class BingoOperations {
 	}
 	
 	public static void checkNewItem(Player p, Material m) {
+		debug(m.name());
 		if(References.materialList.contains(m)) {
 			if(References.playersProgress.get(p.getName())==null) {
 				References.playersProgress.put(p.getName(), new ArrayList<>()); 
@@ -155,9 +182,24 @@ public class BingoOperations {
 				} else {
 					p.sendMessage(ChatColor.WHITE + "You have obtained " + ChatColor.GREEN + "" + ChatColor.BOLD + GameOperations.formatStringCase(m.name()) + ChatColor.RESET + "" + ChatColor.WHITE + "!");
 					GameOperations.printList(p, 3);
-					SavingData.saveProgress(p.getName()); // what if simultaneously??? // TODO
+					SavingData.saveProgress(p.getName()); // TODO what if simultaneously???
 				}
 			}
 		}
+	}
+	
+	private static boolean removeEndItem(Material m, String name) {
+		if(!ConfigData.allowDragonEgg && m==Material.DRAGON_EGG) return true;
+		if(!ConfigData.allowEndCityItems && removeEndCityItem(m, name)) return true; // does second part run if the first one is false
+		if(!ConfigData.allowEndDimensionItems) {
+			if(m==Material.END_CRYSTAL || m==Material.END_ROD || m==Material.END_STONE || m==Material.DRAGON_BREATH || name.contains("chorus") || m==Material.LINGERING_POTION) return true;
+		}
+		return false;
+	}
+	
+	private static boolean removeEndCityItem(Material m, String name) {
+		if(name.contains("shulker") || name.contains("end_stone") || name.contains("purpur")) return true;
+		if(m==Material.DRAGON_HEAD || m==Material.ELYTRA) return true;
+		return false;
 	}
 }

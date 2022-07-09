@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class GridOperations {
 	
 	private static int betweenItems = 5;
 	private static int imageResolution = 16; // 16 - default, 25 - max for 5*5, also can try 32
+	private static DecimalFormat kDf = new DecimalFormat("0.0");
 	
 	public static Map<Material, String> nameComparison;
 	
@@ -47,22 +49,23 @@ public class GridOperations {
 		boolean hasAlreadyRenderedFirstRow = false;
 		boolean hasAlreadyRenderedLastRow = false;
 		if(max>65 && max<128) {
-//			k = (int) Math.floor((float) 128 / max); // TODO
-			k = (float) 128/max;
+//			k = (int) Math.floor((float) 128 / max);
+			k = java.lang.Float.valueOf(kDf.format((double) 128/max).replace(",", "."));
 			max = 128;
 			int amountOfItems = getMaxGridAmount(grid);
 			boolean found = false;
 			a1 : while (!found) {
+				debug(max);
 				for(int i = 0; i < 20; i++) {
 					for(int j = -1; j < 2; j+=2) {
-						i = i * j;
-						int totalBetween = (int) (max - (2*atTheSide + amountOfItems*(block0*k + i)));
+						y = i * j;
+						int totalBetween = (int) (max - (2*atTheSide + amountOfItems*(block0*k + y)));
 						if(totalBetween % (amountOfItems-1) == 0) {
 							int newBetween = totalBetween / (amountOfItems-1);
 							debug(newBetween);
 							if(newBetween >= betweenItems0) {
 								betweenItems0 = newBetween;
-								block0 = (int) (block0*k + i);
+								block0 = (int) (block0*k + y);
 								found = true;
 								break a1;
 							}
@@ -78,8 +81,22 @@ public class GridOperations {
 		
 		BufferedImage target = new BufferedImage(max, max, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 		Graphics2D g = (Graphics2D) target.getGraphics();
-		g.setColor(Color.GRAY);
-		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+		//g.setColor(Color.GRAY);
+		//g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // TODO what about getting "g" width and height?
+		BufferedImage background = null;
+		try {
+			background = ImageIO.read(new File("G:\\for everything\\5\\хрень\\bgTest1.png"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		g.drawImage(background, 0, 0, max, max, null);
+		
+		BufferedImage itemBackground = null;
+		try {
+			itemBackground = ImageIO.read(new File("G:\\for everything\\5\\хрень\\itemBgTest1.png"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		if(drawDebugGrid) {
 		g.setColor(Color.GREEN);
@@ -125,9 +142,20 @@ public class GridOperations {
 					debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
 				}
 				
+				int imgMaxDim = texture.getHeight();
+				if(texture.getWidth() > imgMaxDim) imgMaxDim = texture.getWidth();
+				BufferedImage temp = new BufferedImage(imgMaxDim, imgMaxDim, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D tempG = (Graphics2D) temp.getGraphics();
+				if(texture.getHeight()>texture.getWidth()) {
+					tempG.drawImage(texture, imgMaxDim/2-texture.getWidth()/2, 0, null);
+				} else {
+					tempG.drawImage(texture, 0, imgMaxDim/2-texture.getHeight()/2, null);
+				}
+				
 				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
 				int curY = atTheSide + getSideSize(i, block0, betweenItems0);
-				g.drawImage(texture, curX, curY, block0, block0, null);
+				g.drawImage(itemBackground, curX-2, curY-2, block0+4, block0+4, null);
+				g.drawImage(temp, curX, curY, block0, block0, null);
 				
 				if(drawDebugGrid) {
 					if(!hasAlreadyRenderedFirstRow && i==0) {
@@ -181,7 +209,7 @@ public class GridOperations {
 		BufferedImage target = new BufferedImage(fillResolution, fillResolution, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
-		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // what about getting "g" width and height? //TODO
+		g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // TODO what about getting "g" width and height?
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, 16, 16);
 //		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);

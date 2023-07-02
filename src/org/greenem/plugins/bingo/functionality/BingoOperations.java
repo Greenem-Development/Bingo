@@ -80,7 +80,7 @@ public class BingoOperations {
 	}
 	
 	public static void initForbidden1_19() { // TODO what about existing, but only for /give (1.18 sculk)
-		forbidden1_19.add(Material.REINFORCED_DEEPSLATE);
+		//forbidden1_19.add(Material.REINFORCED_DEEPSLATE); // SPECIFIC API VERSION
 	}
 	
 	public static void initForbidden1_17_1_18() {

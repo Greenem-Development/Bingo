@@ -21,8 +21,10 @@ import javax.imageio.ImageIO;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.util.FileUtil;
+import org.greenem.plugins.bingo.data.ProjectInfo;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
+import org.greenem.plugins.bingo.main.Main;
 import org.greenem.plugins.bingo.util.StandartUtils;
 
 public class GridOperations {
@@ -84,19 +86,11 @@ public class GridOperations {
 		//g.setColor(Color.GRAY);
 		//g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // TODO what about getting "g" width and height?
 		BufferedImage background = null;
-		try {
-			background = ImageIO.read(new File("G:\\for everything\\5\\хрень\\bgTest1.png"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		background = Main.getFileInsideOfJar("bgTest1.png");
 		g.drawImage(background, 0, 0, max, max, null);
 		
 		BufferedImage itemBackground = null;
-		try {
-			itemBackground = ImageIO.read(new File("G:\\for everything\\5\\хрень\\itemBgTest1.png"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		itemBackground =Main.getFileInsideOfJar("itemBgTest1.png");
 
 		if(drawDebugGrid) {
 		g.setColor(Color.GREEN);
@@ -125,22 +119,14 @@ public class GridOperations {
 			
 			for(int j = 0; j < grid[i]; j++) {
 				BufferedImage texture = null;
-				try {
-					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\unknownTexture.png"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				texture = Main.getFileInsideOfJar("unknownTexture.png");
 				
 				String theName = References.materialList.get(counter).name().toLowerCase();
 				if(NameDifferences.differences.containsKey(theName)) {
 					theName = NameDifferences.differences.get(theName);
 				}
 				
-				try {
-					texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
-				} catch (IOException e) {
-					debug(ChatColor.RED + "Unable to load " + ChatColor.WHITE + References.materialList.get(counter).name().toLowerCase() + ChatColor.RED + " texture");
-				}
+				texture = Main.getFileInsideOfJar("3dTextures/" + theName + ".png"); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
 				
 				int imgMaxDim = texture.getHeight();
 				if(texture.getWidth() > imgMaxDim) imgMaxDim = texture.getWidth();
@@ -185,7 +171,7 @@ public class GridOperations {
 //			debug("scaled");
 //		}
 		References.gridMainImage = target;
-		File outputfile = new File("G:\\for everything\\5\\хрень\\generated.png");
+		File outputfile = new File(ProjectInfo.pluginFilesDirectory, "generated.png");
 		try {
 			ImageIO.write(target, "png", outputfile);
 		} catch (IOException e) {
@@ -201,11 +187,7 @@ public class GridOperations {
 		Material m = Material.DEAD_FIRE_CORAL_BLOCK;
 		BufferedImage texture = null;
 		String theName = m.name().toLowerCase();
-		try {
-			texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		texture = Main.getFileInsideOfJar("3dTextures\\" + theName + ".png"); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
 		BufferedImage target = new BufferedImage(fillResolution, fillResolution, BufferedImage.TYPE_INT_ARGB); // what about width <= 0 ?
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		g.setColor(Color.GRAY);
@@ -214,7 +196,7 @@ public class GridOperations {
 		g.fillRect(0, 0, 16, 16);
 //		g.fillRect(target.getWidth()-atTheSide, target.getHeight()-atTheSide, atTheSide, atTheSide);
 		g.drawImage(texture, 0, 0, block, block, null);
-		File outputfile = new File("G:\\for everything\\5\\хрень\\generatedTest.png");
+		File outputfile = new File(ProjectInfo.pluginFilesDirectory, "generatedTest.png");
 		try {
 			ImageIO.write(target, "png", outputfile);
 		} catch (IOException e) {
@@ -312,7 +294,7 @@ public class GridOperations {
 	
 	public static void scanTexturesNames() { //TODO WTF
 		nameComparison = new HashMap<>();
-		File dir = new File("G:\\for everything\\5\\хрень\\3dTextures");
+		File dir = new File(ProjectInfo.pluginFilesDirectory, "Resources"); // new File("D:\\Stuff\\Misc\\For Everything\\MinecraftItemsImages\\3dTextures");
 		File output = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output");
 		File testOutput = new File("G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2OutputTest");
 		output.mkdirs();
@@ -423,7 +405,7 @@ public class GridOperations {
 			}
 			
 			try {
-				texture = ImageIO.read(new File("G:\\for everything\\5\\хрень\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+				texture = ImageIO.read(new File("D:\\Stuff\\Misc\\For Everything\\MinecraftItemsImages\\3dTextures\\" + theName + ".png")); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
 			} catch (IOException e) {
 //				s += "differences.put(\"" + m.name().toLowerCase() + "\", \"\");\n";
 				debug(ChatColor.RED + "Missing texture for " + ChatColor.WHITE + m.name().toLowerCase());

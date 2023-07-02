@@ -14,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -53,6 +55,7 @@ public class Main extends JavaPlugin implements Listener {
 		return instance;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onEnable() {
 		instance = this;
@@ -62,12 +65,18 @@ public class Main extends JavaPlugin implements Listener {
 		finishInit();
 		
 		NameDifferences.init();
-		Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new BukkitRunnable() {
+		/*Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new BukkitRunnable() {
 			@Override
 			public void run() {
 				GridOperations.listMissingResources();
 			}
-		});
+		});*/
+		//BufferedImage im = getFileInsideOfJar("3dTextures/acacia_boat.png");
+		/*try {
+			ImageIO.read(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
 	}
 	
 	@Override
@@ -84,7 +93,14 @@ public class Main extends JavaPlugin implements Listener {
 		
 		if(cmd.getName().equalsIgnoreCase("bgstart")){
 			if(isSenderAPlayerOrConsole(sender)) {
-				GameOperations.start(sender, args);
+				try {
+					GameOperations.start(sender, args);
+					for(Player ap : Bukkit.getOnlinePlayers()) {
+						giveAMap(ap);
+					}
+				} catch (Throwable e) {
+					sender.sendMessage(ChatColor.RED + "ÐŸÑ€Ð¾Ð¸Ð·Ð¾ÑˆÐ»Ð° Ð¾ÑˆÐ¸Ð±ÐºÐ°");
+				}
 			}
 		}
 		else if(cmd.getName().equalsIgnoreCase("bglist")){
@@ -99,7 +115,8 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestscan")){
 			if(isSenderAPlayerOrConsole(sender)) {
-				GridOperations.scanTexturesNames();
+				//GridOperations.scanTexturesNames();
+				sender.sendMessage("The command was disabled due to maintanence");
 			}
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestmap")){
@@ -111,7 +128,7 @@ public class Main extends JavaPlugin implements Listener {
 //					}
 //				});
 //			}
-			test1(sender);
+			if(isSenderAPlayer(sender)) giveAMap((Player) sender);
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestresolution")){
 			if(isSenderAPlayerOrConsole(sender)) {
@@ -119,6 +136,26 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 		return true;
+	}
+	
+	public static BufferedImage getFileInsideOfJar(String path) {
+		Class<?> clazz = Main.class; // Replace with your class name
+		InputStream stream = clazz.getResourceAsStream("/PackedData/" + path);
+		//log(stream);
+
+		if (stream == null) {
+		    return null;
+		}
+
+		try {
+			return ImageIO.read(stream);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+		/*File file = new File(url.getFile());
+		log(file.exists());
+		return file;*/
 	}
     
 	private void initAll() {
@@ -159,7 +196,7 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	private void test1(CommandSender sender) {
+	private void giveAMap(Player p) {
 		GridOperations.generateImage(References.amountOfitems);
 //		Bukkit.getScheduler().runTask(this, new Runnable() {
 //			@Override
@@ -167,15 +204,15 @@ public class Main extends JavaPlugin implements Listener {
 				MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
 				view.getRenderers().clear();
 				TaskRenderer renderer = new TaskRenderer();
-				File f = new File("G:\\for everything\\5\\õðåíü\\generated.png");
+				File f = new File(ProjectInfo.pluginFilesDirectory, "generated.png"); //"D:\\Stuff\\Misc\\For Everything\\MinecraftItemsImages\\generated.png");
 				if(renderer.init(f)) {
 					view.addRenderer(renderer);
 					ItemStack is = new ItemStack(Material.FILLED_MAP);
 					MapMeta meta = (MapMeta) is.getItemMeta();
 					meta.setMapView(view);
 					is.setItemMeta(meta);
-					if(sender instanceof Player) {
-						Player p = (Player) sender;
+					if(p instanceof Player) {
+						//Player p = (Player) sender;
 						p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
 						p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
 						p.getInventory().addItem(is);
@@ -193,7 +230,7 @@ public class Main extends JavaPlugin implements Listener {
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
 		view.getRenderers().clear();
 		TaskRenderer renderer = new TaskRenderer();
-		File f = new File("G:\\for everything\\5\\õðåíü\\generatedTest.png");
+		File f = new File(ProjectInfo.pluginFilesDirectory, "generatedTest.png");
 		if(renderer.init(f)) {
 			view.addRenderer(renderer);
 			ItemStack is = new ItemStack(Material.FILLED_MAP);

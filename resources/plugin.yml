@@ -1,7 +1,7 @@
 name: Bingo
 main: org.greenem.plugins.bingo.main.Main
-version: 1.0.0
-api-version: 1.16
+version: 1.0.2
+api-version: 1.18
 commands:
    bgstart:
       description: Start the game

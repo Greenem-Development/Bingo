@@ -38,7 +38,11 @@ public class GridOperations {
 	
 	public static Map<Material, String> nameComparison;
 	
-	private static BufferedImage checkMark = Main.getFileInsideOfJar("checkMark.png");
+	private static BufferedImage unknownTexture = Main.getFileInsideOfJar("unknownTexture.png");
+	private static BufferedImage background = Main.getFileInsideOfJar("bingoMapBg.png");
+	private static BufferedImage itemBackgroundNotFound = Main.getFileInsideOfJar("bingoItemBgNotFound.png");
+	private static BufferedImage itemBackgroundFound = Main.getFileInsideOfJar("bingoItemBgFound.png");
+	private static BufferedImage checkMark = Main.getFileInsideOfJar("bingoItemCheckmark.png");
 	
 	public static BufferedImage loadItemImage(String theName) {
 		if(NameDifferences.differences.containsKey(theName)) {
@@ -74,6 +78,7 @@ public class GridOperations {
 	
 	public static void generateImage(int items, String pName) { // TODO maybe custom modes of the map? Like open in front of everything + esc
 		int[] grid = generateLayout(items);
+		
 		int width = grid[0];
 		int height = getGridHeight(grid);
 		int atTheSide = 10;
@@ -121,12 +126,8 @@ public class GridOperations {
 		Graphics2D g = (Graphics2D) target.getGraphics();
 		//g.setColor(Color.GRAY);
 		//g.fillRect(0, 0, target.getWidth(), target.getHeight()); // (0,0) is at the top left // TODO what about getting "g" width and height?
-		BufferedImage background = null;
-		background = Main.getFileInsideOfJar("bgTest1.png");
-		g.drawImage(background, 0, 0, max, max, null);
 		
-		BufferedImage itemBackground = null;
-		itemBackground = Main.getFileInsideOfJar("itemBgTest1.png");
+		g.drawImage(background, 0, 0, max, max, null);
 		
 		if(drawDebugGrid) {
 		g.setColor(Color.GREEN);
@@ -154,23 +155,27 @@ public class GridOperations {
 			}
 			
 			for(int j = 0; j < grid[i]; j++) {
-				BufferedImage texture = null;
-				
 				Material material = References.materialList.get(counter);
+				boolean found = References.playersProgress.get(pName) != null && References.playersProgress.get(pName).contains(material);
+				
+				BufferedImage texture = null;
 				texture = loadItemImage(material.name().toLowerCase());
 				
 				if(texture == null) {
-					texture = Main.getFileInsideOfJar("unknownTexture.png");
+					texture = unknownTexture;
 				}
+				
+				BufferedImage itemBackground = itemBackgroundNotFound;
+				if(found) itemBackground = itemBackgroundFound;
 				
 				int imgMaxDim = texture.getHeight();
 				if(texture.getWidth() > imgMaxDim) imgMaxDim = texture.getWidth();
 				BufferedImage temp = new BufferedImage(imgMaxDim, imgMaxDim, BufferedImage.TYPE_INT_ARGB);
 				Graphics2D tempG = (Graphics2D) temp.getGraphics();
 				if(texture.getHeight() > texture.getWidth()) {
-					drawGameItem(tempG, pName, material, texture, imgMaxDim/2-texture.getWidth()/2, 0);
+					drawGameItem(tempG, found, texture, imgMaxDim/2-texture.getWidth()/2, 0);
 				} else {
-					drawGameItem(tempG, pName, material, texture, 0, imgMaxDim/2-texture.getHeight()/2);
+					drawGameItem(tempG, found, texture, 0, imgMaxDim/2-texture.getHeight()/2);
 				}
 				
 				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
@@ -216,10 +221,10 @@ public class GridOperations {
 		}
 	}
 	
-	private static void drawGameItem(Graphics2D g, String pName, Material material, BufferedImage texture, int x, int y) {
+	private static void drawGameItem(Graphics2D g, boolean found, BufferedImage texture, int x, int y) {
 		g.drawImage(texture, x, y, null);
 		
-		if(References.playersProgress.get(pName) != null && References.playersProgress.get(pName).contains(material)) {
+		if(found) {
 			g.drawImage(checkMark, x, y, texture.getWidth(), texture.getHeight(), null);
 		}
 	}

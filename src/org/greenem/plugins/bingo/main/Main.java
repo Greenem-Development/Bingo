@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -239,10 +240,21 @@ public class Main extends JavaPlugin implements Listener {
 					ItemStack is = new ItemStack(Material.FILLED_MAP);
 					MapMeta meta = (MapMeta) is.getItemMeta();
 					meta.setMapView(view);
-					is.setItemMeta(meta);
+					
+					File f = new File(ProjectInfo.pluginFilesDirectory, "generatedMaps/" + p.getName() + ".png");
 					
 					if(itemToModify != null) {
+						debug("Existing");
+						
+						((MapMeta) itemToModify.getItemMeta()).getMapView().getRenderers().clear();
+						for(MapRenderer mr : ((MapMeta) itemToModify.getItemMeta()).getMapView().getRenderers()) {
+							((MapMeta) itemToModify.getItemMeta()).getMapView().removeRenderer(mr);
+						}
+						((MapMeta) itemToModify.getItemMeta()).getMapView().addRenderer(new TaskRenderer(p.getName()).setFile(f));
+						
 						itemToModify.setItemMeta(meta);
+						
+						
 						MapViewManager.updateMapId(p.getName(), (MapMeta) itemToModify.getItemMeta());
 						return;
 					}
@@ -250,6 +262,13 @@ public class Main extends JavaPlugin implements Listener {
 					if(p instanceof Player) {
 //						p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
 //						p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+						
+						for(MapRenderer mr : view.getRenderers()) {
+							view.removeRenderer(mr);
+						}
+						view.addRenderer(new TaskRenderer(p.getName()).setFile(f));
+						
+						is.setItemMeta(meta);
 						p.getInventory().addItem(is);
 						MapViewManager.updateMapId(p.getName(), meta);
 					}
@@ -264,7 +283,8 @@ public class Main extends JavaPlugin implements Listener {
 		view.getRenderers().clear();
 		TaskRenderer renderer = new TaskRenderer(sender.getName());
 		File f = new File(ProjectInfo.pluginFilesDirectory, "generatedTest.png");
-		if(renderer.init(f)) {
+		renderer.setFile(f);
+		if(renderer.init()) {
 			view.addRenderer(renderer);
 			ItemStack is = new ItemStack(Material.FILLED_MAP);
 			MapMeta meta = (MapMeta) is.getItemMeta();

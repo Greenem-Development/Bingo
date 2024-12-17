@@ -24,30 +24,30 @@ public class MapViewManager {
 	
 	public static MapView getPlayerMapView(String pName) {
 		MapView view = null;
-		TaskRenderer renderer = null;
+//		TaskRenderer renderer = null;
 		
-		if(playerRenderers.containsKey(pName)) renderer = playerRenderers.get(pName);
-		else {
-			renderer = new TaskRenderer(pName);
-			
-			File f = new File(ProjectInfo.pluginFilesDirectory, "generatedMaps/" + pName + ".png");
-			if(!renderer.init(f)) {
-				debug(ChatColor.RED + "Rendering map view error, can't find the file");
-				return null;
-			}
-		}
+//		if(playerRenderers.containsKey(pName)) renderer = playerRenderers.get(pName);
+//		else {
+//			renderer = new TaskRenderer(pName);
+//			
+//			File f = new File(ProjectInfo.pluginFilesDirectory, "generatedMaps/" + pName + ".png");
+//			((TaskRenderer) renderer).setFile(f);
+//			if(!renderer.init()) {
+//				debug(ChatColor.RED + "Rendering map view error, can't find the file");
+//				return null;
+//			}
+//		}
 		
 		if(playerViews.containsKey(pName)) view = playerViews.get(pName);
 		else {
 			view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // sus out of bounds
 			view.getRenderers().clear();
-			view.addRenderer(renderer);
+//			view.addRenderer(renderer);
 		}
 		
 //		playerRenderers.put(pName, renderer);
-//		playerViews.put(pName, view);
+		playerViews.put(pName, view);
 		
-//		playerViewIds.put(pName, view.getId());
 		debug("Created " + view.getId());
 		return view;
 	}
@@ -68,7 +68,8 @@ public class MapViewManager {
 		GridOperations.generateImage(References.amountOfitems, pName);
 		for(MapRenderer renderer : getPlayerMapView(pName).getRenderers()) {
 			if(renderer instanceof TaskRenderer) {
-				if(!((TaskRenderer) renderer).init(f)) {
+				((TaskRenderer) renderer).setFile(f);
+				if(!((TaskRenderer) renderer).init()) {
 					debug(ChatColor.RED + "Rendering map view error, can't find the file");
 				}
 				((TaskRenderer) renderer).scheduleRendering();

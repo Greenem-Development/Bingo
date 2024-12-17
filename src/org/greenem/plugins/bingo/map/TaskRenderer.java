@@ -14,10 +14,13 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import org.greenem.plugins.bingo.data.ProjectInfo;
+import org.greenem.plugins.bingo.main.Main;
 
 public class TaskRenderer extends MapRenderer {
-	private BufferedImage img;
+	private BufferedImage img = null;
 	private boolean done;
+	private File file = null;
 	
 	public TaskRenderer(String pName) {
 //		super();
@@ -28,7 +31,13 @@ public class TaskRenderer extends MapRenderer {
 		done = false;
 	}
 	
-	public boolean init(File f) {
+	public TaskRenderer setFile(File f) {
+		this.file = f;
+		return this;
+	}
+	
+	private boolean loadImage(File f) {
+		if(f == null) return false;
 		try {
 			img = ImageIO.read(f);
 			img = MapPalette.resizeImage(img);
@@ -40,11 +49,23 @@ public class TaskRenderer extends MapRenderer {
 		return true;
 	}
 	
+	public boolean init() {
+		return loadImage(this.file);
+	}
+	
+//	private boolean testSwitch = true;
+	
 	@Override
 	public void render(MapView view, MapCanvas canvas, Player player) {
 		if(done) return;
 		
 		debug("Rendering for " + player.getName());
+		
+		if(this.img == null) init();
+		
+//		if(testSwitch) loadImage(this.file);
+//		else this.img = Main.getFileInsideOfJar("unknownTexture.png"); // loadImage(new File(ProjectInfo.pluginFilesDirectory, "generated.png"));
+//		if(testSwitch) testSwitch = false;
 		
 		view.setTrackingPosition(false);
 //		view.setScale(Scale.FARTHEST);

@@ -18,7 +18,8 @@ public class SimpleLogger {
 	
 	public static void log(String s) {
 		s = color + "[" + pluginName + "] " + s;
-		Bukkit.getConsoleSender().sendMessage(s);
+		if(Bukkit.getServer() != null) Bukkit.getConsoleSender().sendMessage(s);
+		else System.out.println(s);
 	}
 	
 	public static void log(int s) {

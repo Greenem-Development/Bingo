@@ -51,7 +51,7 @@ public class GameOperations {
 //					GridOperations.generateImage(amSave);
 //				}
 //			});
-			GridOperations.generateImage(amSave);
+			GridOperations.generateImages(amSave);
 			SavingData.resetProgress();
 			printList(sender, 1);
 			for (Player p : Bukkit.getOnlinePlayers()) {
@@ -75,11 +75,11 @@ public class GameOperations {
 				s += ChatColor.WHITE + "Items to collect:\n";
 			}
 			for (int i = 0; i < References.materialList.size(); i++) {
-				String color = ChatColor.GOLD + "";
+				String color = ChatColor.RESET + "" + ChatColor.GOLD;
 				if(References.playersProgress.containsKey(sender.getName()) && References.playersProgress.get(sender.getName()).contains(References.materialList.get(i))) {
-					color = ChatColor.GREEN + "";
+					color = ChatColor.RESET + "" + ChatColor.GREEN + "" + ChatColor.BOLD;
 				}
-				s += color + ChatColor.BOLD + formatStringCase(References.materialList.get(i).name());
+				s += color + formatStringCase(References.materialList.get(i).name());
 				if(i+1 < References.materialList.size()) {
 					s += ChatColor.RESET + "" + ChatColor.WHITE + ", ";
 				}
@@ -110,11 +110,11 @@ public class GameOperations {
 	}
 	
 	public static void lockGame(CommandSender sender) {
-		if(!References.inGame) {
-			References.inGame = true;
-			sender.sendMessage(ChatColor.GREEN + "The game resetiing was successfully locked");
+		References.inGame = !References.inGame;
+		if(References.inGame) {
+			sender.sendMessage(ChatColor.GREEN + "The game resetting confirmation is now required");
 		} else {
-			sender.sendMessage(ChatColor.RED + "The game resetiing is already locked");
+			sender.sendMessage(ChatColor.RED + "The game resetting confirmation is no longer required");
 		}
 	}
 }

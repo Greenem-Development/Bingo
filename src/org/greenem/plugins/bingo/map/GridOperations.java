@@ -1,6 +1,7 @@
 package org.greenem.plugins.bingo.map;
 
 import static org.greenem.plugins.bingo.util.SimpleLogger.debug;
+import static org.greenem.plugins.bingo.util.SimpleLogger.log;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +38,41 @@ public class GridOperations {
 	
 	public static Map<Material, String> nameComparison;
 	
-	public static void generateImage(int items) { // TODO maybe custom modes of the map? Like open in front of everything + esc
+	private static BufferedImage checkMark = Main.getFileInsideOfJar("checkMark.png");
+	
+	public static BufferedImage loadItemImage(String theName) {
+		if(NameDifferences.differences.containsKey(theName)) {
+			theName = NameDifferences.differences.get(theName);
+		}
+		
+		BufferedImage image = Main.getFileInsideOfJar("3dTextures/" + theName + ".png"); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
+		if(image == null) {
+			log(theName);
+		}
+		
+		return image;
+	}
+	
+	public static boolean checkItemImageAvailable(String theName) {
+		if(NameDifferences.differences.containsKey(theName)) {
+			theName = NameDifferences.differences.get(theName);
+		}
+		
+		boolean available = Main.checkFileInsideOfJar("3dTextures/" + theName + ".png");
+		if(!available) {
+//			log(theName);
+		}
+		
+		return available;
+	}
+	
+	public static void generateImages(int items) {
+		for(Entry<String, ArrayList<Material>> entry : References.playersProgress.entrySet()) {
+			generateImage(items, entry.getKey());
+		}
+	}
+	
+	public static void generateImage(int items, String pName) { // TODO maybe custom modes of the map? Like open in front of everything + esc
 		int[] grid = generateLayout(items);
 		int width = grid[0];
 		int height = getGridHeight(grid);
@@ -90,8 +126,8 @@ public class GridOperations {
 		g.drawImage(background, 0, 0, max, max, null);
 		
 		BufferedImage itemBackground = null;
-		itemBackground =Main.getFileInsideOfJar("itemBgTest1.png");
-
+		itemBackground = Main.getFileInsideOfJar("itemBgTest1.png");
+		
 		if(drawDebugGrid) {
 		g.setColor(Color.GREEN);
 			g.fillRect(0, 0, atTheSide, max);
@@ -119,23 +155,22 @@ public class GridOperations {
 			
 			for(int j = 0; j < grid[i]; j++) {
 				BufferedImage texture = null;
-				texture = Main.getFileInsideOfJar("unknownTexture.png");
 				
-				String theName = References.materialList.get(counter).name().toLowerCase();
-				if(NameDifferences.differences.containsKey(theName)) {
-					theName = NameDifferences.differences.get(theName);
+				Material material = References.materialList.get(counter);
+				texture = loadItemImage(material.name().toLowerCase());
+				
+				if(texture == null) {
+					texture = Main.getFileInsideOfJar("unknownTexture.png");
 				}
-				
-				texture = Main.getFileInsideOfJar("3dTextures/" + theName + ".png"); // G:\\Minecraft Stuff\\Resources\\VanillaDefault+1.19\\assets\\minecraft\\textures\\way2Output\\
 				
 				int imgMaxDim = texture.getHeight();
 				if(texture.getWidth() > imgMaxDim) imgMaxDim = texture.getWidth();
 				BufferedImage temp = new BufferedImage(imgMaxDim, imgMaxDim, BufferedImage.TYPE_INT_ARGB);
 				Graphics2D tempG = (Graphics2D) temp.getGraphics();
-				if(texture.getHeight()>texture.getWidth()) {
-					tempG.drawImage(texture, imgMaxDim/2-texture.getWidth()/2, 0, null);
+				if(texture.getHeight() > texture.getWidth()) {
+					drawGameItem(tempG, pName, material, texture, imgMaxDim/2-texture.getWidth()/2, 0);
 				} else {
-					tempG.drawImage(texture, 0, imgMaxDim/2-texture.getHeight()/2, null);
+					drawGameItem(tempG, pName, material, texture, 0, imgMaxDim/2-texture.getHeight()/2);
 				}
 				
 				int curX = atTheSide + getSideSize(j, block0, betweenItems0) + offset;
@@ -171,11 +206,21 @@ public class GridOperations {
 //			debug("scaled");
 //		}
 		References.gridMainImage = target;
-		File outputfile = new File(ProjectInfo.pluginFilesDirectory, "generated.png");
+		File outputfile = new File(ProjectInfo.pluginFilesDirectory, "generatedMaps/" + pName + ".png");
+		outputfile.getParentFile().mkdirs();
 		try {
 			ImageIO.write(target, "png", outputfile);
+			debug("Saved file for " + pName);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private static void drawGameItem(Graphics2D g, String pName, Material material, BufferedImage texture, int x, int y) {
+		g.drawImage(texture, x, y, null);
+		
+		if(References.playersProgress.get(pName) != null && References.playersProgress.get(pName).contains(material)) {
+			g.drawImage(checkMark, x, y, texture.getWidth(), texture.getHeight(), null);
 		}
 	}
 	

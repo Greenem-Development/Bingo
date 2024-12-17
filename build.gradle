@@ -17,7 +17,18 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT'
+}
+
+//compileJava {
+//    sourceCompatibility = JavaLanguageVersion.of(17)
+//    targetCompatibility = JavaLanguageVersion.of(17)
+//}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
 }
 
 sourceSets {
@@ -33,7 +44,7 @@ sourceSets {
 
 jar {
 	archiveBaseName = 'Bingo'
-    destinationDirectory.set(file("D:/Servers/NewFreshServers/Tests1.18.2/plugins")) //D:/Stuff/Development/PluginsBuilds
+    destinationDirectory.set(file("D:/Servers/PluginTests/V3/plugins")) //D:/Stuff/Development/PluginsBuilds
     configurations.implementation.canBeResolved=true
     from { configurations.implementation.collect {
       //it.canBeResolved = true 

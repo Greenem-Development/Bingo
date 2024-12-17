@@ -1,5 +1,8 @@
 package org.greenem.plugins.bingo.map;
 
+import static org.greenem.plugins.bingo.util.SimpleLogger.debug;
+import static org.greenem.plugins.bingo.util.SimpleLogger.log;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -11,13 +14,17 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
-import org.bukkit.map.MapView.Scale;
 
 public class TaskRenderer extends MapRenderer {
 	private BufferedImage img;
 	private boolean done;
 	
-	public TaskRenderer() {
+	public TaskRenderer(String pName) {
+//		super();
+		scheduleRendering();
+	}
+	
+	public void scheduleRendering() {
 		done = false;
 	}
 	
@@ -25,6 +32,7 @@ public class TaskRenderer extends MapRenderer {
 		try {
 			img = ImageIO.read(f);
 			img = MapPalette.resizeImage(img);
+			debug("Reloaded the image");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -35,6 +43,8 @@ public class TaskRenderer extends MapRenderer {
 	@Override
 	public void render(MapView view, MapCanvas canvas, Player player) {
 		if(done) return;
+		
+		debug("Rendering for " + player.getName());
 		
 		view.setTrackingPosition(false);
 //		view.setScale(Scale.FARTHEST);

@@ -41,6 +41,7 @@ import org.greenem.plugins.bingo.files.LoadingData;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
 import org.greenem.plugins.bingo.functionality.GameOperations;
 import org.greenem.plugins.bingo.map.GridOperations;
+import org.greenem.plugins.bingo.map.MapViewManager;
 import org.greenem.plugins.bingo.map.NameDifferences;
 import org.greenem.plugins.bingo.map.TaskRenderer;
 import org.greenem.plugins.bingo.util.DebugModeSwitch;
@@ -65,6 +66,9 @@ public class Main extends JavaPlugin implements Listener {
 		finishInit();
 		
 		NameDifferences.init();
+		
+		BingoOperations.checkMaterialTextures();
+		
 		/*Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -96,10 +100,11 @@ public class Main extends JavaPlugin implements Listener {
 				try {
 					GameOperations.start(sender, args);
 					for(Player ap : Bukkit.getOnlinePlayers()) {
-						giveAMap(ap);
+						giveAMap(ap, null);
 					}
 				} catch (Throwable e) {
 					sender.sendMessage(ChatColor.RED + "Произошла ошибка");
+					e.printStackTrace();
 				}
 			}
 		}
@@ -116,7 +121,7 @@ public class Main extends JavaPlugin implements Listener {
 		else if(cmd.getName().equalsIgnoreCase("bgtestscan")){
 			if(isSenderAPlayerOrConsole(sender)) {
 				//GridOperations.scanTexturesNames();
-				sender.sendMessage("The command was disabled due to maintanence");
+				sender.sendMessage("The command is disabled");
 			}
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestmap")){
@@ -128,7 +133,10 @@ public class Main extends JavaPlugin implements Listener {
 //					}
 //				});
 //			}
-			if(isSenderAPlayer(sender)) giveAMap((Player) sender);
+			if(args.length >= 1 && Bukkit.getPlayerExact(args[0]) != null) {
+				giveAMap(Bukkit.getPlayerExact(args[0]), null);
+			}
+			else if(isSenderAPlayer(sender)) giveAMap((Player) sender, null);
 		}
 		else if(cmd.getName().equalsIgnoreCase("bgtestresolution")){
 			if(isSenderAPlayerOrConsole(sender)) {
@@ -156,6 +164,13 @@ public class Main extends JavaPlugin implements Listener {
 		/*File file = new File(url.getFile());
 		log(file.exists());
 		return file;*/
+	}
+	
+	public static boolean checkFileInsideOfJar(String path) {
+		Class<?> clazz = Main.class; // Replace with your class name
+		InputStream stream = clazz.getResourceAsStream("/PackedData/" + path);
+
+		return stream != null;
 	}
     
 	private void initAll() {
@@ -196,30 +211,48 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	private void giveAMap(Player p) {
-		GridOperations.generateImage(References.amountOfitems);
+	public static ItemStack findItemToModify(Player p) {
+		ItemStack itemToModify = null;
+		
+		int lastId = MapViewManager.getPlayerMapId(p.getName());
+		for(ItemStack invItem : p.getInventory()) {
+			if(invItem != null && invItem.getItemMeta() != null && invItem.getItemMeta() instanceof MapMeta) {
+				debug("Comparing: " + ((MapMeta) invItem.getItemMeta()).getMapView().getId() + " " + lastId);
+				if(((MapMeta) invItem.getItemMeta()).getMapView().getId() == lastId) {
+					itemToModify = invItem;
+				}
+			}
+		}
+		
+		return itemToModify;
+	}
+	
+	public static void giveAMap(Player p, ItemStack itemToModify) {
+		if(itemToModify == null) itemToModify = findItemToModify(p);
+		
+		GridOperations.generateImage(References.amountOfitems, p.getName());
 //		Bukkit.getScheduler().runTask(this, new Runnable() {
 //			@Override
 //			public void run() {
-				MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
-				view.getRenderers().clear();
-				TaskRenderer renderer = new TaskRenderer();
-				File f = new File(ProjectInfo.pluginFilesDirectory, "generated.png"); //"D:\\Stuff\\Misc\\For Everything\\MinecraftItemsImages\\generated.png");
-				if(renderer.init(f)) {
-					view.addRenderer(renderer);
+				MapView view = MapViewManager.getPlayerMapView(p.getName());
+				if(view != null) {
 					ItemStack is = new ItemStack(Material.FILLED_MAP);
 					MapMeta meta = (MapMeta) is.getItemMeta();
 					meta.setMapView(view);
 					is.setItemMeta(meta);
-					if(p instanceof Player) {
-						//Player p = (Player) sender;
-						p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-						p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
-						p.getInventory().addItem(is);
+					
+					if(itemToModify != null) {
+						itemToModify.setItemMeta(meta);
+						MapViewManager.updateMapId(p.getName(), (MapMeta) itemToModify.getItemMeta());
+						return;
 					}
-				} else {
-					debug(ChatColor.RED + "Rendering map view error, can't find the file");
-					return;
+					
+					if(p instanceof Player) {
+//						p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+//						p.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+						p.getInventory().addItem(is);
+						MapViewManager.updateMapId(p.getName(), meta);
+					}
 				}
 //			}
 //		});
@@ -229,7 +262,7 @@ public class Main extends JavaPlugin implements Listener {
 		GridOperations.generateTESTImage(args);
 		MapView view = Bukkit.createMap(Bukkit.getWorlds().get(0)); // safe???
 		view.getRenderers().clear();
-		TaskRenderer renderer = new TaskRenderer();
+		TaskRenderer renderer = new TaskRenderer(sender.getName());
 		File f = new File(ProjectInfo.pluginFilesDirectory, "generatedTest.png");
 		if(renderer.init(f)) {
 			view.addRenderer(renderer);

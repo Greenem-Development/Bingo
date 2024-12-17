@@ -27,6 +27,8 @@ import org.bukkit.util.FileUtil;
 import org.greenem.plugins.bingo.config.ConfigData;
 import org.greenem.plugins.bingo.data.References;
 import org.greenem.plugins.bingo.files.SavingData;
+import org.greenem.plugins.bingo.map.GridOperations;
+import org.greenem.plugins.bingo.map.MapViewManager;
 
 import com.google.common.collect.Lists;
 
@@ -54,6 +56,16 @@ public class BingoOperations {
 		return ms;
 	}
 	
+	public static void checkMaterialTextures() {
+		for (Material m : Material.values()) {
+			if(allowed.contains(m)) {
+				if(!GridOperations.checkItemImageAvailable(m.name().toLowerCase())) {
+					debug(ChatColor.RED + "" + m.name().toLowerCase());
+				}
+			}
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static void initAllowed() { // TODO DO WHEN RELOADING CONFIG SOMEHOW!!!
 		allowed = (ArrayList<Material>) allMaterials.clone();
@@ -67,7 +79,7 @@ public class BingoOperations {
 			try { if(forbidden1_19.contains(m)) { it.remove(); } } catch (NoSuchFieldError e) {}
 			try { if(forbidden1_17_1_18.contains(m)) { it.remove(); } } catch (NoSuchFieldError e) {}
 		    if (forbidden.contains(m) || lowercase.contains("legacy") || lowercase.contains("command") || lowercase.contains("spawn_egg") || lowercase.contains("infested")
-		    		 || lowercase.contains("wall_sign") || lowercase.contains("wall_banner") || lowercase.contains("wall_fan") || lowercase.contains("candle_cake")
+		    		 || lowercase.contains("wall_sign")|| lowercase.contains("wall_hanging_sign") || lowercase.contains("wall_banner") || lowercase.contains("wall_fan") || lowercase.contains("candle_cake")
 		    		 || lowercase.contains("wall_head") || lowercase.contains("wall_skull") || lowercase.contains("potted") || lowercase.contains("banner_pattern")) { // TODO check for misspelling
 		        it.remove();
 		    }
@@ -79,8 +91,14 @@ public class BingoOperations {
 		}
 	}
 	
+	private static void tryToAdd(ArrayList<Material> list, Material m) {
+		try { list.add(m); } catch (NoSuchFieldError e) {}
+	}
+	
 	public static void initForbidden1_19() { // TODO what about existing, but only for /give (1.18 sculk)
 		//forbidden1_19.add(Material.REINFORCED_DEEPSLATE); // SPECIFIC API VERSION
+		
+//		tryToAdd(forbidden1_19, Material.ACACIA_HANGING_SIGN);
 	}
 	
 	public static void initForbidden1_17_1_18() {
@@ -166,7 +184,7 @@ public class BingoOperations {
 	}
 	
 	public static void checkNewItem(Player p, Material m) {
-		debug(m.name());
+//		debug(m.name());
 		if(References.materialList.contains(m)) {
 			if(References.playersProgress.get(p.getName())==null) {
 				References.playersProgress.put(p.getName(), new ArrayList<>()); 
@@ -179,10 +197,12 @@ public class BingoOperations {
 						pl.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + p.getName() + ChatColor.RESET + "" + ChatColor.GOLD + " has collected all the items!");
 					}
 					p.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "Congratulations!", ChatColor.YELLOW + "You have collected all the items!", 4, 50, 30);
+					MapViewManager.updateMapForPlayer(p.getName());
 				} else {
 					p.sendMessage(ChatColor.WHITE + "You have obtained " + ChatColor.GREEN + "" + ChatColor.BOLD + GameOperations.formatStringCase(m.name()) + ChatColor.RESET + "" + ChatColor.WHITE + "!");
-					GameOperations.printList(p, 3);
 					SavingData.saveProgress(p.getName()); // TODO what if simultaneously???
+					GameOperations.printList(p, 3);
+					MapViewManager.updateMapForPlayer(p.getName());
 				}
 			}
 		}

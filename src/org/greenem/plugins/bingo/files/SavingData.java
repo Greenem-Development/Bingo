@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.greenem.plugins.bingo.config.ConfigData;
 import org.greenem.plugins.bingo.data.ProjectInfo;
 import org.greenem.plugins.bingo.data.References;
+import org.greenem.plugins.bingo.util.GameModeType;
 
 public class SavingData {
 	public static void saveTask(boolean reset) {

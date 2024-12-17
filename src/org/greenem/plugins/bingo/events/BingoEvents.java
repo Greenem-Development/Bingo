@@ -3,17 +3,23 @@ package org.greenem.plugins.bingo.events;
 import static org.greenem.plugins.bingo.util.SimpleLogger.debug;
 import static org.greenem.plugins.bingo.util.SimpleLogger.log;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDispenseArmorEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.PiglinBarterEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
+import org.bukkit.inventory.ItemStack;
 import org.greenem.plugins.bingo.functionality.BingoOperations;
 
 public class BingoEvents implements Listener {
